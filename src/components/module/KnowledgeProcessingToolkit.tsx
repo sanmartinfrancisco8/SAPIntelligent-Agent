@@ -24,7 +24,7 @@ export function KnowledgeProcessingToolkit() {
   return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline">Área de Estudio (Knowledge Processing Toolkit)</CardTitle>
+          <CardTitle className="font-headline">Área de Estudio</CardTitle>
           <CardDescription>Esta área, alimentada por el contexto de la consulta actual (módulo/funcionalidad) y la base de conocimiento, debe ofrecer las siguientes salidas dinámicas</CardDescription>
         </CardHeader>
         <CardContent>
@@ -48,9 +48,9 @@ export function KnowledgeProcessingToolkit() {
             <Tabs defaultValue="summary">
               <div className="flex flex-wrap gap-4 mb-4">
                 <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 md:w-auto md:inline-flex">
-                  <TabsTrigger value="summary">Resumen IA</TabsTrigger>
-                  <TabsTrigger value="mind-map">Mapa Mental IA</TabsTrigger>
-                  <TabsTrigger value="process-flow">Flujo de Proceso IA</TabsTrigger>
+                  <TabsTrigger value="summary">Resumen</TabsTrigger>
+                  <TabsTrigger value="mind-map">Mapa Mental</TabsTrigger>
+                  <TabsTrigger value="process-flow">Flujo de Proceso</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="summary">
