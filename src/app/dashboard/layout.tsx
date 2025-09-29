@@ -9,7 +9,6 @@ import {
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { AIChat } from "@/components/chat/AIChat";
 
 export default function DashboardLayout({
   children,
@@ -56,7 +55,6 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
-      <AIChat />
     </SidebarProvider>
   );
 }

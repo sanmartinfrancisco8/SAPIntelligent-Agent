@@ -2,11 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import {
-  Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +21,7 @@ type Message = {
   content: string;
 };
 
-export function AIChat() {
+export function AIChatContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,13 +59,6 @@ export function AIChat() {
   };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button size="icon" className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg">
-          <MessageSquare className="h-7 w-7" />
-          <span className="sr-only">Abrir Asistente IA</span>
-        </Button>
-      </SheetTrigger>
       <SheetContent className="flex flex-col p-0" side="right">
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="font-headline flex items-center gap-2">
@@ -131,6 +122,5 @@ export function AIChat() {
           </form>
         </div>
       </SheetContent>
-    </Sheet>
   );
 }
