@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   SidebarProvider,
   Sidebar,
-  SidebarInset,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
@@ -18,6 +17,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -31,6 +31,10 @@ export default function DashboardLayout({
     }
   }, [router]);
 
+  if (pathname === '/dashboard/knowledge-toolkit') {
+    return <>{children}</>;
+  }
+  
   if (!isClient || !isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
