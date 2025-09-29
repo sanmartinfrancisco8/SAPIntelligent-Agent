@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center text-center text-foreground">
           <AppLogo className="mb-4 h-14 w-14" />
           <h1 className="font-headline text-4xl font-bold tracking-tight">
-            SAP B1 Companion
+            SAP Intelligent Agent
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
             Su asistente inteligente para SAP Business One

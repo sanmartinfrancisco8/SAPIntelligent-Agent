@@ -49,7 +49,7 @@ export function LoginForm() {
         localStorage.setItem("sap-b1-companion-user", values.userId);
         toast({
           title: "Inicio de sesión exitoso",
-          description: "Bienvenido a SAP B1 Companion.",
+          description: "Bienvenido a SAP Intelligent Agent.",
         });
         router.push("/dashboard");
       } else {

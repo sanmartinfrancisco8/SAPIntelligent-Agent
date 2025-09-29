@@ -9,7 +9,7 @@ export default function DashboardPage() {
     <div className="space-y-8 bg-card p-8 rounded-lg">
        <header className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-headline text-4xl font-bold">Bienvenido a SAP B1 Companion</h1>
+          <h1 className="font-headline text-4xl font-bold">Bienvenido a SAP Intelligent Agent</h1>
           <p className="text-lg text-muted-foreground">Su asistente inteligente para explorar las profundidades de SAP Business One.</p>
         </div>
         <div className="flex gap-2">

@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'SAP B1 Companion',
+  title: 'SAP Intelligent Agent',
   description: 'Su asistente inteligente para SAP Business One',
 };
 

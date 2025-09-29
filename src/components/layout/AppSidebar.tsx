@@ -40,7 +40,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <AppLogo />
           <div className="flex flex-col">
-            <h2 className="font-headline text-lg font-semibold text-sidebar-foreground">SAP B1 Companion</h2>
+            <h2 className="font-headline text-lg font-semibold text-sidebar-foreground">SAP Intelligent Agent</h2>
             <p className="text-xs text-sidebar-foreground/80">v1.0</p>
           </div>
         </div>
