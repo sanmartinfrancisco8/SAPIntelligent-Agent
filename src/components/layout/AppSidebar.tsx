@@ -36,7 +36,7 @@ export function AppSidebar() {
 
   return (
     <>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-4 no-print">
         <div className="flex items-center gap-3">
           <AppLogo />
           <div className="flex flex-col">
@@ -45,8 +45,8 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <Separator />
-      <SidebarContent className="p-2">
+      <Separator className="no-print"/>
+      <SidebarContent className="p-2 no-print">
         <SidebarMenu>
           {modules.map((module) => (
             <Collapsible key={module.id} asChild open={openModules.includes(module.id)} onOpenChange={() => toggleModule(module.id)}>
@@ -82,7 +82,7 @@ export function AppSidebar() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="hidden md:flex p-4">
+      <SidebarFooter className="hidden md:flex p-4 no-print">
          <SidebarTrigger />
       </SidebarFooter>
     </>

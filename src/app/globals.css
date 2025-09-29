@@ -83,3 +83,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body {
+    background: white;
+  }
+  header,
+  [data-sidebar="sidebar"],
+  .fixed.bottom-6.right-6 {
+    display: none;
+  }
+  main {
+    padding: 0;
+  }
+  @page {
+    size: auto;
+    margin: 0.5in;
+  }
+  .no-print {
+    display: none;
+  }
+}
