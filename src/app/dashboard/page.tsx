@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { KnowledgeProcessingToolkit } from "@/components/module/KnowledgeProcessingToolkit";
 import { BookOpenCheck, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
@@ -7,7 +6,7 @@ import { AIChatContent } from "@/components/chat/AIChat";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-[hsl(205,46%,92%)] p-8 rounded-lg">
        <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="font-headline text-4xl font-bold">Bienvenido a SAP B1 Companion</h1>
