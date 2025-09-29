@@ -1,27 +1,22 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Network } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { KnowledgeProcessingToolkit } from "@/components/module/KnowledgeProcessingToolkit";
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center">
-        <Card className="max-w-2xl w-full">
-            <CardHeader className="items-center">
-                <div className="p-4 bg-primary/10 rounded-full mb-4">
-                    <Network className="w-10 h-10 text-primary" />
-                </div>
-                <CardTitle className="font-headline text-3xl">
-                    Bienvenido a SAP B1 Companion
-                </CardTitle>
-                <CardDescription className="text-lg">
-                    Su asistente inteligente para explorar las profundidades de SAP Business One.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">
-                    Para comenzar, por favor seleccione un módulo del menú de navegación a la izquierda. Podrá acceder a resúmenes generados por IA, mapas mentales interactivos y diagramas de flujo de procesos para cada funcionalidad.
-                </p>
-            </CardContent>
-        </Card>
+    <div className="space-y-8">
+       <header className="flex items-center gap-4">
+        <div>
+          <h1 className="font-headline text-4xl font-bold">Bienvenido a SAP B1 Companion</h1>
+          <p className="text-lg text-muted-foreground">Su asistente inteligente para explorar las profundidades de SAP Business One.</p>
+        </div>
+      </header>
+
+      <p className="text-muted-foreground max-w-4xl">
+          Para comenzar, puede seleccionar un módulo del menú de navegación a la izquierda para ver su descripción y funcionalidades, o utilizar nuestro kit de herramientas de procesamiento de conocimiento a continuación para generar resúmenes, mapas mentales y flujos de proceso basados en IA.
+      </p>
+
+      <KnowledgeProcessingToolkit />
     </div>
   );
 }
