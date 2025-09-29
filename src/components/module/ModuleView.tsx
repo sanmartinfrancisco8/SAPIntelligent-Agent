@@ -35,7 +35,7 @@ export function ModuleView({ module }: ModuleViewProps) {
       <Card>
         <CardHeader>
           <CardTitle className="font-headline">Área de Estudio (Knowledge Processing Toolkit)</CardTitle>
-          <CardDescription>Salidas dinámicas basadas en el módulo y la funcionalidad seleccionados.</CardDescription>
+          <CardDescription>Esta área, alimentada por el contexto de la consulta actual (módulo/funcionalidad) y la base de conocimiento, debe ofrecer las siguientes salidas dinámicas</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="summary">
@@ -61,9 +61,9 @@ export function ModuleView({ module }: ModuleViewProps) {
             <TabsContent value="summary">
                 <Card className='shadow-none border-0'>
                     <CardHeader>
-                        <CardTitle>Resumen del Módulo</CardTitle>
+                        <CardTitle>Resumen de la Consulta</CardTitle>
                         <CardDescription>
-                            Un resumen conciso generado por IA sobre las principales funcionalidades de este módulo.
+                            Generación de un texto conciso que sintetice la información clave del módulo y la funcionalidad actual.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -74,9 +74,9 @@ export function ModuleView({ module }: ModuleViewProps) {
             <TabsContent value="mind-map">
                 <Card className='shadow-none border-0'>
                     <CardHeader>
-                        <CardTitle>Mapa Mental Conceptual</CardTitle>
+                        <CardTitle>Mapa Mental (Mind Map)</CardTitle>
                         <CardDescription>
-                            Visualice la estructura conceptual del módulo {module.name} con este mapa mental generado por IA.
+                            Generación visual de un mapa mental que represente la estructura jerárquica y conceptual del módulo y su relación con la funcionalidad consultada.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -87,9 +87,9 @@ export function ModuleView({ module }: ModuleViewProps) {
             <TabsContent value="process-flow">
                 <Card className='shadow-none border-0'>
                     <CardHeader>
-                        <CardTitle>Diagrama de Flujo de Proceso</CardTitle>
+                        <CardTitle>Diagrama de Flujo (Flow Diagram)</CardTitle>
                         <CardDescription>
-                            Genere un diagrama de flujo visual para una funcionalidad específica y entienda la trazabilidad de los documentos.
+                            Generación visual de un diagrama de flujo de proceso para la funcionalidad consultada. Debe ilustrar la trazabilidad de documentos (Ej., Oferta de Ventas &rarr; Orden de Ventas &rarr; Entrega &rarr; Factura).
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
