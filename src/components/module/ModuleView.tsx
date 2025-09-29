@@ -1,3 +1,6 @@
+
+"use client";
+
 import type { Module } from '@/lib/sap-modules';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,11 +46,11 @@ export function ModuleView({ module }: ModuleViewProps) {
                 <TabsTrigger value="process-flow">Flujo de Proceso IA</TabsTrigger>
               </TabsList>
               <div className="flex flex-wrap gap-2 ml-auto">
-                <Button variant="outline" onClick={handlePrint}>
+                <Button variant="outline" onClick={handlePrint} className="no-print">
                   <Printer className="mr-2 h-4 w-4" />
                   Imprimir en PDF
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild className="no-print">
                   <Link href="https://help.sap.com/docs/SAP_BUSINESS_ONE" target="_blank">
                     <Book className="mr-2 h-4 w-4" />
                     Consulta Manual
