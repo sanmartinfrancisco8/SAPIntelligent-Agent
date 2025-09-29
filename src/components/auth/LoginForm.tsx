@@ -64,7 +64,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="bg-card/80 backdrop-blur-sm">
+    <Card>
       <CardHeader>
         <CardTitle className="font-headline text-2xl text-center">Iniciar Sesión</CardTitle>
       </CardHeader>
