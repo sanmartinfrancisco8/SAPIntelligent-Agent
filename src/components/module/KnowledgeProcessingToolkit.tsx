@@ -72,11 +72,13 @@ export function KnowledgeProcessingToolkit() {
   };
   
   const handleFullScreen = () => {
-    if (!result || !resultType) return;
+    if (!result || !resultType || !selectedModule) return;
     const resultPayload = {
         type: resultType,
         data: result,
-        title: `Resultado para ${selectedModule?.name}`
+        title: resultType === 'process-flow' 
+          ? `${resultType} para ${selectedFunctionality?.name}`
+          : `${resultType} para ${selectedModule.name}`
     }
     sessionStorage.setItem('resultPayload', JSON.stringify(resultPayload));
     window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
