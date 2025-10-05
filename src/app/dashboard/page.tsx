@@ -6,10 +6,10 @@ import { AIChatContent } from "@/components/chat/AIChat";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-8 bg-card p-8 rounded-lg">
+    <div className="space-y-8 bg-card/70 backdrop-blur-sm p-8 rounded-lg border border-border">
        <header className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-headline text-4xl font-bold">Bienvenido a SAP Intelligent Agent</h1>
+          <h1 className="font-headline text-4xl font-bold text-primary">Bienvenido a SAP Intelligent Agent</h1>
           <p className="text-lg text-muted-foreground">Su asistente inteligente para explorar las profundidades de SAP Business One.</p>
         </div>
         <div className="flex gap-2">
