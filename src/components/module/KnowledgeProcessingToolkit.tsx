@@ -6,7 +6,7 @@ import { modules } from '@/lib/sap-modules';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
 import { FileText, GitBranch, Workflow, Wand2, Expand, Shrink, Download, Copy } from 'lucide-react';
