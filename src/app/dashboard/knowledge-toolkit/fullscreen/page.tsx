@@ -61,7 +61,7 @@ export default function FullScreenResultPage() {
             a.href = payload.data;
             a.download = `${payload.title.replace(/ /g, '_')}.png`;
             document.body.appendChild(a);
-a.click();
+            a.click();
             document.body.removeChild(a);
         }
     }
@@ -143,5 +143,3 @@ a.click();
     </div>
   );
 }
-
-    

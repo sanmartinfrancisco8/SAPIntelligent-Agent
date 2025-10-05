@@ -176,12 +176,12 @@ export function KnowledgeProcessingToolkit() {
               <>
                   <Button
                     variant="outline"
-                    size="icon"
+                    size="sm"
                     onClick={openFullScreenNewTab}
                     aria-label="Ver resultado en pantalla completa en una nueva pestaña"
                     title="Ver en otra pestaña"
                   >
-                    <Expand className="h-4 w-4" />
+                    <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
                   </Button>
                   <Button
                     variant="outline"
@@ -320,5 +320,3 @@ export function KnowledgeProcessingToolkit() {
     </div>
   );
 }
-
-    
