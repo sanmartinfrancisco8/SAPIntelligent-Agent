@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { Module, Functionality } from '@/lib/sap-modules';
@@ -9,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
-import { Wand2 } from 'lucide-react';
+import { FileText, GitBranch, Workflow, Wand2 } from 'lucide-react';
 import { LoadingSpinner } from '../loading-spinner';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
@@ -81,9 +82,19 @@ export function KnowledgeProcessingToolkit() {
 
   const isGenerateDisabled = isLoading || !selectedModule || (activeTab === 'process-flow' && !selectedFunctionality);
 
+  const ResultIcon = () => {
+    if (!resultType) return null;
+    switch (resultType) {
+      case 'summary': return <FileText className="h-6 w-6 text-primary" />;
+      case 'mind-map': return <GitBranch className="h-6 w-6 text-primary" />;
+      case 'process-flow': return <Workflow className="h-6 w-6 text-primary" />;
+      default: return null;
+    }
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-      <Card className="flex flex-col bg-card/70 backdrop-blur-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-full">
+      <Card className="lg:col-span-2 flex flex-col bg-card/70 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="font-headline text-primary">Asistente de Estudio</CardTitle>
           <CardDescription>Seleccione un módulo y una herramienta para generar contenido con IA.</CardDescription>
@@ -149,29 +160,32 @@ export function KnowledgeProcessingToolkit() {
         </CardContent>
       </Card>
 
-      <Card className="flex flex-col bg-card/70 backdrop-blur-sm">
+      <Card className="lg:col-span-3 flex flex-col bg-card/70 backdrop-blur-sm shadow-xl">
         <CardHeader>
-          <CardTitle className="font-headline text-primary">Resultado Generado</CardTitle>
-          <CardDescription>Aquí se visualizará el contenido generado por la IA.</CardDescription>
+          <div className="flex items-center gap-3">
+            {resultType && !isLoading && <ResultIcon />}
+            <CardTitle className="font-headline text-primary">Panel de Resultados Inteligentes</CardTitle>
+          </div>
+          <CardDescription>Aquí se visualizará el contenido generado por el Asistente de Estudio.</CardDescription>
         </CardHeader>
         <Separator />
         <CardContent className="flex-1 flex items-center justify-center p-6">
             {isLoading && (
-              <div className='text-center space-y-2'>
-                  <LoadingSpinner size={32}/>
-                  <p className='text-muted-foreground'>Generando...</p>
+              <div className='text-center space-y-4 animate-fade-in'>
+                  <LoadingSpinner size={40}/>
+                  <p className='text-lg text-muted-foreground'>Generando contenido con IA...</p>
               </div>
             )}
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
+            {error && <p className="text-sm text-destructive text-center animate-fade-in">{error}</p>}
             {!isLoading && !error && result && resultType && (
-                 <>
+                 <div className='w-full h-full animate-fade-in'>
                     {resultType === 'summary' && (
-                       <div className="prose prose-sm max-w-none rounded-md bg-muted/50 p-4 text-foreground w-full h-full overflow-y-auto">
+                       <div className="prose prose-sm max-w-none rounded-md bg-muted/50 p-6 text-foreground w-full h-full overflow-y-auto">
                            <p>{result}</p>
                        </div>
                     )}
                     {resultType === 'mind-map' && (
-                        <div className="rounded-md bg-muted/50 p-4 w-full h-full overflow-auto">
+                        <div className="rounded-md bg-muted/50 p-6 w-full h-full overflow-auto">
                             <pre className="text-sm whitespace-pre-wrap font-code">{result}</pre>
                         </div>
                     )}
@@ -185,11 +199,11 @@ export function KnowledgeProcessingToolkit() {
                             />
                         </div>
                     )}
-                 </>
+                 </div>
             )}
             {!isLoading && !error && !result && (
-                <div className="text-center text-muted-foreground">
-                    <p>Seleccione un módulo y genere contenido para verlo aquí.</p>
+                <div className="text-center text-muted-foreground animate-fade-in">
+                    <p>Seleccione una herramienta y genere contenido para visualizarlo aquí.</p>
                 </div>
             )}
         </CardContent>
