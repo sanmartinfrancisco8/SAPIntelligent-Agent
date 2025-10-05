@@ -20,8 +20,8 @@ type ResultData = string | null;
 
 type ViewerPayload = {
   type: GenerationType;
-  data: string;                 // texto o url de imagen
-  title: string;                // título a mostrar/descargar
+  data: string;
+  title: string;
 };
 
 export function KnowledgeProcessingToolkit() {
@@ -131,7 +131,7 @@ export function KnowledgeProcessingToolkit() {
 
     try {
       sessionStorage.setItem('resultPayload', JSON.stringify(payload));
-      window.open('/viewer', '_blank', 'noopener,noreferrer');
+      window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
     } catch (e) {
       console.error('No fue posible abrir el visor:', e);
       toast({ variant: 'destructive', title: 'Error', description: 'No fue posible abrir el visor en otra pestaña.' });

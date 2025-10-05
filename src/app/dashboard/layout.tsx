@@ -30,7 +30,8 @@ export default function DashboardLayout({
     }
   }, [router]);
 
-  if (pathname === '/dashboard/knowledge-toolkit' || pathname.startsWith('/dashboard/knowledge-toolkit/fullscreen')) {
+  // Exclude the main dashboard layout from the fullscreen knowledge toolkit pages
+  if (pathname.startsWith('/dashboard/knowledge-toolkit')) {
     return <>{children}</>;
   }
   
