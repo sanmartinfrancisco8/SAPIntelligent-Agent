@@ -18,12 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 type GenerationType = 'summary' | 'mind-map' | 'process-flow';
 type ResultData = string | null;
 
-type ViewerPayload = {
-  type: GenerationType;
-  data: string;
-  title: string;
-};
-
 export function KnowledgeProcessingToolkit() {
   const [selectedModule, setSelectedModule] = useState<Module | undefined>(undefined);
   const [selectedFunctionality, setSelectedFunctionality] = useState<Functionality | undefined>(undefined);
@@ -79,31 +73,6 @@ export function KnowledgeProcessingToolkit() {
     }
   };
 
-  const openFullScreenNewTab = () => {
-    if (!result || !resultType || !selectedModule) return;
-
-    const title =
-      resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo de Proceso – ${selectedFunctionality.name}`
-        : resultType === 'mind-map'
-        ? `Mapa Mental – ${selectedModule.name}`
-        : `Resumen – ${selectedModule.name}`;
-
-    const payload: ViewerPayload = {
-      type: resultType,
-      data: result,
-      title,
-    };
-
-    try {
-      sessionStorage.setItem('resultPayload', JSON.stringify(payload));
-      window.open('/viewer', '_blank', 'noopener,noreferrer');
-    } catch (e) {
-      console.error('No fue posible abrir el visor:', e);
-      toast({ variant: 'destructive', title: 'Error', description: 'No fue posible abrir el visor en otra pestaña.' });
-    }
-  };
-
   const getButtonText = () => {
     switch (activeTab) {
       case 'summary': return 'Generar Resumen';
@@ -143,23 +112,12 @@ export function KnowledgeProcessingToolkit() {
             <Button
               variant="outline"
               size="sm"
-              onClick={openFullScreenNewTab}
-              aria-label="Ver resultado en pantalla completa en una nueva pestaña"
-              title="Ver en otra pestaña"
-            >
-              <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
-            </Button>
-          )}
-
-          {result && !isLoading && (
-            <Button
-              variant="outline"
-              size="icon"
               onClick={() => setIsFullScreen(!isFullScreen)}
               aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
               title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
             >
-              {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+              {isFullScreen ? <Shrink className="mr-2 h-4 w-4" /> : <Expand className="mr-2 h-4 w-4" />}
+              {isFullScreen ? "Salir de Pantalla Completa" : "Pantalla Completa"}
             </Button>
           )}
         </div>
