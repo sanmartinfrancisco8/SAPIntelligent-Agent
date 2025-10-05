@@ -83,9 +83,9 @@ export function KnowledgeProcessingToolkit() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-      <Card className="flex flex-col">
+      <Card className="flex flex-col bg-card/70 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="font-headline">Controles de Estudio</CardTitle>
+          <CardTitle className="font-headline text-primary">Controles de Estudio</CardTitle>
           <CardDescription>Seleccione un módulo y una herramienta para generar contenido con IA.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col gap-6">
@@ -149,9 +149,9 @@ export function KnowledgeProcessingToolkit() {
         </CardContent>
       </Card>
 
-      <Card className="flex flex-col">
+      <Card className="flex flex-col bg-card/70 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="font-headline">Resultado Generado</CardTitle>
+          <CardTitle className="font-headline text-primary">Resultado Generado</CardTitle>
           <CardDescription>Aquí se visualizará el contenido generado por la IA.</CardDescription>
         </CardHeader>
         <Separator />
