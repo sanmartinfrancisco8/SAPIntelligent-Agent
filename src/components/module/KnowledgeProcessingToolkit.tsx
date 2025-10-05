@@ -57,26 +57,42 @@ export function KnowledgeProcessingToolkit() {
     setResult(null);
     setResultType(activeTab);
 
-    try {
+    // === MOCK DATA IMPLEMENTATION ===
+    setTimeout(() => {
       let data: ResultData = null;
-      if (activeTab === 'summary') {
-        const functionalityDescription = selectedModule.functionalities.map(f => f.name).join(', ');
-        data = await getModuleSummary({ moduleName: selectedModule.name, functionalityDescription });
-      } else if (activeTab === 'mind-map') {
-        data = await getMindMap({ moduleName: selectedModule.name });
-      } else if (activeTab === 'process-flow') {
-        if (!selectedFunctionality) {
-          throw new Error('Por favor, seleccione una funcionalidad.');
-        }
-        data = await getProcessFlow({ functionality: selectedFunctionality.name });
+      switch (activeTab) {
+        case 'summary':
+          data = `Este es un resumen de ejemplo para el módulo "${selectedModule.name}". Este módulo es fundamental para gestionar ${selectedModule.description.toLowerCase()}. Se integra con otros módulos para garantizar un flujo de datos coherente y una visión completa del negocio.`;
+          break;
+        case 'mind-map':
+          data = `
+[${selectedModule.name}]
+└─── Funcionalidades Clave
+${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
+└─── Descripción
+    └─── ${selectedModule.description}
+└─── Integraciones
+    ├── Finanzas
+    └─── CRM
+          `;
+          break;
+        case 'process-flow':
+          if (!selectedFunctionality) {
+            setError('Por favor, seleccione una funcionalidad.');
+            setIsLoading(false);
+            return;
+          }
+          // Using a placeholder image service for the mock diagram
+          data = `https://picsum.photos/seed/${selectedFunctionality.id}/1200/800`;
+          break;
+        default:
+          setError('Tipo de generación no reconocido.');
+          setIsLoading(false);
+          return;
       }
       setResult(data);
-    } catch (e: any) {
-      setError(`No se pudo generar el resultado. ${e.message || 'Inténtelo de nuevo.'}`);
-      console.error(e);
-    } finally {
       setIsLoading(false);
-    }
+    }, 1500); // Simulate a 1.5 second delay
   };
 
   const handleCopy = () => {
@@ -92,8 +108,8 @@ export function KnowledgeProcessingToolkit() {
     if (!result || !resultType || !selectedModule) return;
     
     const title = resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/ /g, '_')}`
-        : `Resultado_${selectedModule.name.replace(/ /g, '_')}`;
+        ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/[\\/:\s]/g, '_')}`
+        : `Resultado_${selectedModule.name.replace(/[\\/:\s]/g, '_')}`;
 
     if (resultType === 'summary' || resultType === 'mind-map') {
         const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
