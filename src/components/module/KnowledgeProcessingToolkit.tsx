@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
-import { FileText, GitBranch, Workflow, Wand2 } from 'lucide-react';
+import { FileText, GitBranch, Workflow, Wand2, Expand } from 'lucide-react';
 import { LoadingSpinner } from '../loading-spinner';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
@@ -71,6 +71,17 @@ export function KnowledgeProcessingToolkit() {
     }
   };
   
+  const handleFullScreen = () => {
+    if (!result || !resultType) return;
+    const resultPayload = {
+        type: resultType,
+        data: result,
+        title: `Resultado para ${selectedModule?.name}`
+    }
+    sessionStorage.setItem('resultPayload', JSON.stringify(resultPayload));
+    window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
+  }
+
   const getButtonText = () => {
     switch (activeTab) {
       case 'summary': return 'Generar Resumen';
@@ -161,12 +172,24 @@ export function KnowledgeProcessingToolkit() {
       </Card>
 
       <Card className="lg:col-span-3 flex flex-col bg-card/70 backdrop-blur-sm shadow-xl">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {resultType && !isLoading && <ResultIcon />}
-            <CardTitle className="font-headline text-primary">Panel de Resultados Inteligentes</CardTitle>
+            <div>
+                <CardTitle className="font-headline text-primary">Panel de Resultados Inteligentes</CardTitle>
+                <CardDescription>Aquí se visualizará el contenido generado por el Asistente de Estudio.</CardDescription>
+            </div>
           </div>
-          <CardDescription>Aquí se visualizará el contenido generado por el Asistente de Estudio.</CardDescription>
+          {result && !isLoading && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFullScreen}
+              aria-label="Ver resultado en pantalla completa en una nueva pestaña"
+            >
+              <Expand className="h-4 w-4" />
+            </Button>
+          )}
         </CardHeader>
         <Separator />
         <CardContent className="flex-1 flex items-center justify-center p-6">
