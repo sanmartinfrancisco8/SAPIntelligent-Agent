@@ -85,7 +85,7 @@ export function KnowledgeProcessingToolkit() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
       <Card className="flex flex-col bg-card/70 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="font-headline text-primary">Controles de Estudio</CardTitle>
+          <CardTitle className="font-headline text-primary">Asistente de Estudio</CardTitle>
           <CardDescription>Seleccione un módulo y una herramienta para generar contenido con IA.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col gap-6">
