@@ -30,7 +30,7 @@ export default function DashboardLayout({
     }
   }, [router]);
 
-  if (pathname === '/dashboard/knowledge-toolkit' || pathname === '/dashboard/knowledge-toolkit/fullscreen') {
+  if (pathname === '/dashboard/knowledge-toolkit' || pathname.startsWith('/dashboard/knowledge-toolkit/fullscreen')) {
     return <>{children}</>;
   }
   

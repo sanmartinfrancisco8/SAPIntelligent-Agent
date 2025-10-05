@@ -76,9 +76,9 @@ export function KnowledgeProcessingToolkit() {
     const resultPayload = {
         type: resultType,
         data: result,
-        title: resultType === 'process-flow' 
-          ? `${resultType} para ${selectedFunctionality?.name}`
-          : `${resultType} para ${selectedModule.name}`
+        title: resultType === 'process-flow' && selectedFunctionality
+          ? `Flujo de Proceso para ${selectedFunctionality.name}`
+          : `Resultado para ${selectedModule.name}`
     }
     sessionStorage.setItem('resultPayload', JSON.stringify(resultPayload));
     window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
@@ -185,7 +185,7 @@ export function KnowledgeProcessingToolkit() {
           {result && !isLoading && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={handleFullScreen}
               aria-label="Ver resultado en pantalla completa en una nueva pestaña"
             >
