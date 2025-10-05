@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
-import { FileText, GitBranch, Workflow, Wand2, Expand, Shrink, Download, Copy } from 'lucide-react';
+import { FileText, GitBranch, Workflow, Wand2, Expand, Shrink } from 'lucide-react';
 import { LoadingSpinner } from '../loading-spinner';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
@@ -20,8 +20,8 @@ type ResultData = string | null;
 
 type ViewerPayload = {
   type: GenerationType;
-  data: string;                 // texto o url de imagen
-  title: string;                // título a mostrar/descargar
+  data: string;
+  title: string;
 };
 
 export function KnowledgeProcessingToolkit() {
@@ -79,49 +79,15 @@ export function KnowledgeProcessingToolkit() {
     }
   };
 
-  const handleCopy = () => {
-    if (result && (resultType === 'summary' || resultType === 'mind-map')) {
-      navigator.clipboard.writeText(result);
-      toast({ title: 'Copiado', description: 'El contenido se ha copiado al portapapeles.' });
-    } else {
-      toast({ variant: 'destructive', title: 'Error', description: 'No se puede copiar una imagen directamente.' });
-    }
-  };
-
-  const handleDownload = () => {
-    if (!result || !resultType || !selectedModule) return;
-    
-    const title = resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/ /g, '_')}`
-        : `Resultado_${selectedModule.name.replace(/ /g, '_')}`;
-
-    if (resultType === 'summary' || resultType === 'mind-map') {
-        const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${title}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } else {
-        const a = document.createElement('a');
-        a.href = result;
-        a.download = `${title}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
-  };
-
   const openFullScreenNewTab = () => {
-    if (!result || !resultType) return;
+    if (!result || !resultType || !selectedModule) return;
 
     const title =
       resultType === 'process-flow' && selectedFunctionality
         ? `Flujo de Proceso – ${selectedFunctionality.name}`
-        : `${selectedModule?.name ?? 'Resultado'}`;
+        : resultType === 'mind-map'
+        ? `Mapa Mental – ${selectedModule.name}`
+        : `Resumen – ${selectedModule.name}`;
 
     const payload: ViewerPayload = {
       type: resultType,
@@ -158,8 +124,6 @@ export function KnowledgeProcessingToolkit() {
       default: return null;
     }
   };
-  
-  const canCopy = resultType === 'summary' || resultType === 'mind-map';
 
   const resultsPanel = (
     <Card className={cn(
@@ -175,7 +139,6 @@ export function KnowledgeProcessingToolkit() {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-          {/* Botón NUEVA PESTAÑA */}
           {result && !isLoading && (
             <Button
               variant="outline"
@@ -188,19 +151,6 @@ export function KnowledgeProcessingToolkit() {
             </Button>
           )}
 
-          {/* Descargar / Copiar SOLO en modo fullscreen interno (opcional) */}
-          {result && !isLoading && isFullScreen && (
-            <>
-              <Button variant="outline" size="sm" onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />Descargar
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCopy} disabled={!canCopy}>
-                <Copy className="mr-2 h-4 w-4" />Copiar
-              </Button>
-            </>
-          )}
-
-          {/* Pantalla completa en la MISMA vista (lo mantenemos) */}
           {result && !isLoading && (
             <Button
               variant="outline"

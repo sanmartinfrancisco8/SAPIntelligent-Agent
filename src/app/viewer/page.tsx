@@ -16,7 +16,7 @@ type ResultPayload = {
   title: string;
 };
 
-export default function FullScreenResultPage() {
+export default function ViewerPage() {
   const [payload, setPayload] = useState<ResultPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
