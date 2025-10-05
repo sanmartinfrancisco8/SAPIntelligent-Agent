@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 type GenerationType = 'summary' | 'mind-map' | 'process-flow';
 type ResultData = string | null;
 
-type ViewerPayload = {
+export type ViewerPayload = {
   type: GenerationType;
   data: string;
   title: string;
@@ -115,26 +115,32 @@ export function KnowledgeProcessingToolkit() {
     }
   };
 
-  const openFullScreenNewTab = () => {
-    if (!result || !resultType) return;
-
+  const openInNewTab = () => {
+    if (!result || !resultType || !selectedModule) return;
+  
     const title =
       resultType === 'process-flow' && selectedFunctionality
         ? `Flujo de Proceso – ${selectedFunctionality.name}`
-        : `${selectedModule?.name ?? 'Resultado'}`;
-
+        : `Resultado IA – ${selectedModule.name}`;
+  
     const payload: ViewerPayload = {
       type: resultType,
       data: result,
-      title,
+      title: title,
     };
-
+  
     try {
-      sessionStorage.setItem('resultPayload', JSON.stringify(payload));
-      window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
+      const key = `viewerPayload_${Date.now()}`;
+      localStorage.setItem(key, JSON.stringify(payload));
+      const url = `/dashboard/knowledge-toolkit/viewer?key=${key}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
     } catch (e) {
-      console.error('No fue posible abrir el visor:', e);
-      toast({ variant: 'destructive', title: 'Error', description: 'No fue posible abrir el visor en otra pestaña.' });
+      console.error("Failed to open new tab or set localStorage item:", e);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo abrir la nueva pestaña. Por favor, revisa los permisos de tu navegador.",
+      });
     }
   };
 
@@ -176,17 +182,27 @@ export function KnowledgeProcessingToolkit() {
         </div>
         <div className='flex items-center gap-2'>
           {result && !isLoading && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openFullScreenNewTab}
-              aria-label="Ver resultado en pantalla completa en una nueva pestaña"
-              title="Ver en otra pestaña"
-            >
-              <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
-            </Button>
+             <>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openInNewTab}
+                    title="Ver en otra pestaña"
+                >
+                    <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
+                </Button>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsFullScreen(!isFullScreen)}
+                    aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
+                    title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                    >
+                    {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+                </Button>
+             </>
           )}
-          {result && !isLoading && isFullScreen && (
+          {isFullScreen && result && !isLoading && (
             <>
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="mr-2 h-4 w-4" />Descargar
@@ -195,17 +211,6 @@ export function KnowledgeProcessingToolkit() {
                 <Copy className="mr-2 h-4 w-4" />Copiar
               </Button>
             </>
-          )}
-          {result && !isLoading && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setIsFullScreen(!isFullScreen)}
-              aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
-              title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
-            >
-              {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-            </Button>
           )}
         </div>
       </CardHeader>
