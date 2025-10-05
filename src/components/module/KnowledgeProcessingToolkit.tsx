@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { Module, Functionality } from '@/lib/sap-modules';
@@ -10,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
-import { FileText, GitBranch, Workflow, Wand2, Expand } from 'lucide-react';
+import { FileText, GitBranch, Workflow, Wand2, Expand, Shrink, Download, Copy } from 'lucide-react';
 import { LoadingSpinner } from '../loading-spinner';
 import Image from 'next/image';
 import { Separator } from '../ui/separator';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 type GenerationType = 'summary' | 'mind-map' | 'process-flow';
 type ResultData = string | null;
@@ -27,11 +28,13 @@ export function KnowledgeProcessingToolkit() {
   const [result, setResult] = useState<ResultData>(null);
   const [resultType, setResultType] = useState<GenerationType | null>(null);
   const [activeTab, setActiveTab] = useState<GenerationType>('summary');
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const { toast } = useToast();
 
   const handleModuleChange = (moduleId: string) => {
     const mod = modules.find(m => m.id === moduleId);
     setSelectedModule(mod);
-    setSelectedFunctionality(mod?.functionalities[0]); // Reset functionality
+    setSelectedFunctionality(mod?.functionalities[0]);
     setResult(null);
     setError(null);
   };
@@ -70,19 +73,42 @@ export function KnowledgeProcessingToolkit() {
       setIsLoading(false);
     }
   };
-  
-  const handleFullScreen = () => {
-    if (!result || !resultType || !selectedModule) return;
-    const resultPayload = {
-        type: resultType,
-        data: result,
-        title: resultType === 'process-flow' && selectedFunctionality
-          ? `Flujo de Proceso para ${selectedFunctionality.name}`
-          : `Resultado para ${selectedModule.name}`
+
+  const handleCopy = () => {
+    if (result && (resultType === 'summary' || resultType === 'mind-map')) {
+      navigator.clipboard.writeText(result);
+      toast({ title: 'Copiado', description: 'El contenido se ha copiado al portapapeles.' });
+    } else {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se puede copiar una imagen directamente.' });
     }
-    sessionStorage.setItem('resultPayload', JSON.stringify(resultPayload));
-    window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
-  }
+  };
+
+  const handleDownload = () => {
+    if (!result || !resultType || !selectedModule) return;
+    
+    const title = resultType === 'process-flow' && selectedFunctionality
+        ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/ /g, '_')}`
+        : `Resultado_${selectedModule.name.replace(/ /g, '_')}`;
+
+    if (resultType === 'summary' || resultType === 'mind-map') {
+        const blob = new Blob([result], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } else {
+        const a = document.createElement('a');
+        a.href = result;
+        a.download = `${title}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+  };
 
   const getButtonText = () => {
     switch (activeTab) {
@@ -103,6 +129,86 @@ export function KnowledgeProcessingToolkit() {
       case 'process-flow': return <Workflow className="h-6 w-6 text-primary" />;
       default: return null;
     }
+  }
+  
+  const canCopy = resultType === 'summary' || resultType === 'mind-map';
+
+  const resultsPanel = (
+    <Card className={cn(
+        "lg:col-span-3 flex flex-col bg-card/70 backdrop-blur-sm shadow-xl",
+        isFullScreen && "fixed inset-0 z-50 rounded-none border-none h-screen w-screen"
+    )}>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex items-center gap-3">
+          {resultType && !isLoading && <ResultIcon />}
+          <div>
+            <CardTitle className="font-headline text-primary">Panel de Resultados Inteligentes</CardTitle>
+            <CardDescription>Aquí se visualizará el contenido generado por el Asistente de Estudio.</CardDescription>
+          </div>
+        </div>
+        <div className='flex items-center gap-2'>
+            {result && !isLoading && isFullScreen && (
+                <>
+                    <Button variant="outline" size="sm" onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Descargar</Button>
+                    <Button variant="outline" size="sm" onClick={handleCopy} disabled={!canCopy}><Copy className="mr-2 h-4 w-4" />Copiar</Button>
+                </>
+            )}
+            {result && !isLoading && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsFullScreen(!isFullScreen)}
+                aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
+              >
+                {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+              </Button>
+            )}
+        </div>
+      </CardHeader>
+      <Separator />
+      <CardContent className="flex-1 flex items-center justify-center p-6 overflow-auto">
+          {isLoading && (
+            <div className='text-center space-y-4 animate-fade-in'>
+                <LoadingSpinner size={40}/>
+                <p className='text-lg text-muted-foreground'>Generando contenido con IA...</p>
+            </div>
+          )}
+          {error && <p className="text-sm text-destructive text-center animate-fade-in">{error}</p>}
+          {!isLoading && !error && result && resultType && (
+               <div className={cn('w-full h-full animate-fade-in', isFullScreen && "p-8")}>
+                  {resultType === 'summary' && (
+                     <div className="prose prose-invert max-w-none rounded-md bg-muted/50 p-6 text-foreground w-full h-full overflow-y-auto">
+                         <p>{result}</p>
+                     </div>
+                  )}
+                  {resultType === 'mind-map' && (
+                      <div className="rounded-md bg-muted/50 p-6 w-full h-full overflow-auto">
+                          <pre className="text-sm whitespace-pre-wrap font-code">{result}</pre>
+                      </div>
+                  )}
+                  {resultType === 'process-flow' && (
+                      <div className="relative w-full h-full">
+                           <Image
+                              src={result}
+                              alt={`Diagrama de flujo generado`}
+                              fill
+                              className="object-contain"
+                          />
+                      </div>
+                  )}
+               </div>
+          )}
+          {!isLoading && !error && !result && (
+              <div className="text-center text-muted-foreground animate-fade-in">
+                  <p>Seleccione una herramienta y genere contenido para visualizarlo aquí.</p>
+              </div>
+          )}
+      </CardContent>
+    </Card>
+  );
+
+  if (isFullScreen) {
+    return resultsPanel;
   }
 
   return (
@@ -173,66 +279,7 @@ export function KnowledgeProcessingToolkit() {
         </CardContent>
       </Card>
 
-      <Card className="lg:col-span-3 flex flex-col bg-card/70 backdrop-blur-sm shadow-xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-3">
-            {resultType && !isLoading && <ResultIcon />}
-            <div>
-                <CardTitle className="font-headline text-primary">Panel de Resultados Inteligentes</CardTitle>
-                <CardDescription>Aquí se visualizará el contenido generado por el Asistente de Estudio.</CardDescription>
-            </div>
-          </div>
-          {result && !isLoading && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleFullScreen}
-              aria-label="Ver resultado en pantalla completa en una nueva pestaña"
-            >
-              <Expand className="h-4 w-4" />
-            </Button>
-          )}
-        </CardHeader>
-        <Separator />
-        <CardContent className="flex-1 flex items-center justify-center p-6">
-            {isLoading && (
-              <div className='text-center space-y-4 animate-fade-in'>
-                  <LoadingSpinner size={40}/>
-                  <p className='text-lg text-muted-foreground'>Generando contenido con IA...</p>
-              </div>
-            )}
-            {error && <p className="text-sm text-destructive text-center animate-fade-in">{error}</p>}
-            {!isLoading && !error && result && resultType && (
-                 <div className='w-full h-full animate-fade-in'>
-                    {resultType === 'summary' && (
-                       <div className="prose prose-sm max-w-none rounded-md bg-muted/50 p-6 text-foreground w-full h-full overflow-y-auto">
-                           <p>{result}</p>
-                       </div>
-                    )}
-                    {resultType === 'mind-map' && (
-                        <div className="rounded-md bg-muted/50 p-6 w-full h-full overflow-auto">
-                            <pre className="text-sm whitespace-pre-wrap font-code">{result}</pre>
-                        </div>
-                    )}
-                    {resultType === 'process-flow' && (
-                        <div className="relative aspect-video w-full">
-                             <Image
-                                src={result}
-                                alt={`Diagrama de flujo generado`}
-                                fill
-                                className="object-contain"
-                            />
-                        </div>
-                    )}
-                 </div>
-            )}
-            {!isLoading && !error && !result && (
-                <div className="text-center text-muted-foreground animate-fade-in">
-                    <p>Seleccione una herramienta y genere contenido para visualizarlo aquí.</p>
-                </div>
-            )}
-        </CardContent>
-      </Card>
+      {resultsPanel}
     </div>
   );
 }
