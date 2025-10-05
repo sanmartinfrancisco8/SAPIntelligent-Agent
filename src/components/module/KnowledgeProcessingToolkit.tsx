@@ -19,6 +19,12 @@ import { useToast } from '@/hooks/use-toast';
 type GenerationType = 'summary' | 'mind-map' | 'process-flow';
 type ResultData = string | null;
 
+type ViewerPayload = {
+    type: GenerationType;
+    data: string;
+    title: string;
+};
+
 export function KnowledgeProcessingToolkit() {
   const [selectedModule, setSelectedModule] = useState<Module | undefined>(undefined);
   const [selectedFunctionality, setSelectedFunctionality] = useState<Functionality | undefined>(undefined);
@@ -72,6 +78,25 @@ export function KnowledgeProcessingToolkit() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const openFullScreenNewTab = () => {
+    if (!result || !resultType || !selectedModule) return;
+    
+    const title = resultType === 'process-flow' && selectedFunctionality
+        ? `Flujo de Proceso - ${selectedFunctionality.name}`
+        : resultType === 'mind-map'
+        ? `Mapa Mental - ${selectedModule.name}`
+        : `Resumen - ${selectedModule.name}`;
+
+    const payload: ViewerPayload = {
+      type: resultType,
+      data: result,
+      title: title,
+    };
+    
+    sessionStorage.setItem('resultPayload', JSON.stringify(payload));
+    window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
   };
 
   const handleCopy = () => {
@@ -147,21 +172,33 @@ export function KnowledgeProcessingToolkit() {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-            {result && !isLoading && isFullScreen && (
+            {result && !isLoading && (
+              <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={openFullScreenNewTab}
+                    aria-label="Ver resultado en pantalla completa en una nueva pestaña"
+                    title="Ver en otra pestaña"
+                  >
+                    <Expand className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsFullScreen(!isFullScreen)}
+                    aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
+                    title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa en esta vista"}
+                  >
+                    {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+                  </Button>
+              </>
+            )}
+             {isFullScreen && (
                 <>
                     <Button variant="outline" size="sm" onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Descargar</Button>
                     <Button variant="outline" size="sm" onClick={handleCopy} disabled={!canCopy}><Copy className="mr-2 h-4 w-4" />Copiar</Button>
                 </>
-            )}
-            {result && !isLoading && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsFullScreen(!isFullScreen)}
-                aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
-              >
-                {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-              </Button>
             )}
         </div>
       </CardHeader>
@@ -283,3 +320,5 @@ export function KnowledgeProcessingToolkit() {
     </div>
   );
 }
+
+    

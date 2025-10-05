@@ -21,11 +21,16 @@ export default function FullScreenResultPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedPayload = sessionStorage.getItem('resultPayload');
-    if (storedPayload) {
-      setPayload(JSON.parse(storedPayload));
+    try {
+      const storedPayload = sessionStorage.getItem('resultPayload');
+      if (storedPayload) {
+        setPayload(JSON.parse(storedPayload));
+      }
+    } catch (error) {
+        console.error("Failed to parse result payload from sessionStorage", error);
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const handleCopy = () => {
@@ -138,3 +143,5 @@ export default function FullScreenResultPage() {
     </div>
   );
 }
+
+    
