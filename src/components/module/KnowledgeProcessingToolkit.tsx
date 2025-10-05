@@ -6,7 +6,7 @@ import { modules } from '@/lib/sap-modules';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getModuleSummary, getMindMap, getProcessFlow } from '@/app/actions';
 import { Button } from '../ui/button';
 import { FileText, GitBranch, Workflow, Wand2, Expand, Shrink, Download, Copy } from 'lucide-react';
@@ -20,9 +20,9 @@ type GenerationType = 'summary' | 'mind-map' | 'process-flow';
 type ResultData = string | null;
 
 type ViewerPayload = {
-    type: GenerationType;
-    data: string;
-    title: string;
+  type: GenerationType;
+  data: string;                 // texto o url de imagen
+  title: string;                // título a mostrar/descargar
 };
 
 export function KnowledgeProcessingToolkit() {
@@ -80,25 +80,6 @@ export function KnowledgeProcessingToolkit() {
     }
   };
 
-  const openFullScreenNewTab = () => {
-    if (!result || !resultType || !selectedModule) return;
-    
-    const title = resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo de Proceso - ${selectedFunctionality.name}`
-        : resultType === 'mind-map'
-        ? `Mapa Mental - ${selectedModule.name}`
-        : `Resumen - ${selectedModule.name}`;
-
-    const payload: ViewerPayload = {
-      type: resultType,
-      data: result,
-      title: title,
-    };
-    
-    sessionStorage.setItem('resultPayload', JSON.stringify(payload));
-    window.open('/dashboard/knowledge-toolkit/fullscreen', '_blank', 'noopener,noreferrer');
-  };
-
   const handleCopy = () => {
     if (result && (resultType === 'summary' || resultType === 'mind-map')) {
       navigator.clipboard.writeText(result);
@@ -135,6 +116,29 @@ export function KnowledgeProcessingToolkit() {
     }
   };
 
+  const openFullScreenNewTab = () => {
+    if (!result || !resultType) return;
+
+    const title =
+      resultType === 'process-flow' && selectedFunctionality
+        ? `Flujo de Proceso – ${selectedFunctionality.name}`
+        : `${selectedModule?.name ?? 'Resultado'}`;
+
+    const payload: ViewerPayload = {
+      type: resultType,
+      data: result,
+      title,
+    };
+
+    try {
+      sessionStorage.setItem('resultPayload', JSON.stringify(payload));
+      window.open('/viewer', '_blank', 'noopener,noreferrer');
+    } catch (e) {
+      console.error('No fue posible abrir el visor:', e);
+      toast({ variant: 'destructive', title: 'Error', description: 'No fue posible abrir el visor en otra pestaña.' });
+    }
+  };
+
   const getButtonText = () => {
     switch (activeTab) {
       case 'summary': return 'Generar Resumen';
@@ -142,7 +146,7 @@ export function KnowledgeProcessingToolkit() {
       case 'process-flow': return 'Generar Diagrama';
       default: return 'Generar';
     }
-  }
+  };
 
   const isGenerateDisabled = isLoading || !selectedModule || (activeTab === 'process-flow' && !selectedFunctionality);
 
@@ -154,7 +158,7 @@ export function KnowledgeProcessingToolkit() {
       case 'process-flow': return <Workflow className="h-6 w-6 text-primary" />;
       default: return null;
     }
-  }
+  };
   
   const canCopy = resultType === 'summary' || resultType === 'mind-map';
 
@@ -172,34 +176,43 @@ export function KnowledgeProcessingToolkit() {
           </div>
         </div>
         <div className='flex items-center gap-2'>
-            {result && !isLoading && (
-              <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={openFullScreenNewTab}
-                    aria-label="Ver resultado en pantalla completa en una nueva pestaña"
-                    title="Ver en otra pestaña"
-                  >
-                    <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setIsFullScreen(!isFullScreen)}
-                    aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
-                    title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa en esta vista"}
-                  >
-                    {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-                  </Button>
-              </>
-            )}
-             {isFullScreen && (
-                <>
-                    <Button variant="outline" size="sm" onClick={handleDownload}><Download className="mr-2 h-4 w-4" />Descargar</Button>
-                    <Button variant="outline" size="sm" onClick={handleCopy} disabled={!canCopy}><Copy className="mr-2 h-4 w-4" />Copiar</Button>
-                </>
-            )}
+          {/* Botón NUEVA PESTAÑA */}
+          {result && !isLoading && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openFullScreenNewTab}
+              aria-label="Ver resultado en pantalla completa en una nueva pestaña"
+              title="Ver en otra pestaña"
+            >
+              <Expand className="mr-2 h-4 w-4" /> Ver en otra pestaña
+            </Button>
+          )}
+
+          {/* Descargar / Copiar SOLO en modo fullscreen interno (opcional) */}
+          {result && !isLoading && isFullScreen && (
+            <>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="mr-2 h-4 w-4" />Descargar
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleCopy} disabled={!canCopy}>
+                <Copy className="mr-2 h-4 w-4" />Copiar
+              </Button>
+            </>
+          )}
+
+          {/* Pantalla completa en la MISMA vista (lo mantenemos) */}
+          {result && !isLoading && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsFullScreen(!isFullScreen)}
+              aria-label={isFullScreen ? "Salir de pantalla completa" : "Ver en pantalla completa"}
+              title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
+            >
+              {isFullScreen ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
       </CardHeader>
       <Separator />
@@ -230,7 +243,7 @@ export function KnowledgeProcessingToolkit() {
                               alt={`Diagrama de flujo generado`}
                               fill
                               className="object-contain"
-                          />
+                           />
                       </div>
                   )}
                </div>
