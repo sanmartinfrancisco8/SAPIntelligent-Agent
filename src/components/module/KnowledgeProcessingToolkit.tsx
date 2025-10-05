@@ -117,7 +117,7 @@ export function KnowledgeProcessingToolkit() {
               title={isFullScreen ? "Salir de pantalla completa" : "Pantalla completa"}
             >
               {isFullScreen ? <Shrink className="mr-2 h-4 w-4" /> : <Expand className="mr-2 h-4 w-4" />}
-              {isFullScreen ? "Salir de Pantalla Completa" : "Pantalla Completa"}
+              <span>{isFullScreen ? "Salir de Pantalla Completa" : "Pantalla Completa"}</span>
             </Button>
           )}
         </div>
