@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { Module, Functionality } from '@/lib/sap-modules';
