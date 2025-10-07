@@ -27,6 +27,8 @@ const formSchema = z.object({
   password: z.string().min(1, "La contraseña es obligatoria."),
 });
 
+const ADMIN_EMAIL = "sanmartinfrancisco8@gmail.com";
+
 export function LoginForm() {
   const router = useRouter();
   const auth = useAuth();
@@ -49,7 +51,14 @@ export function LoginForm() {
         title: "Inicio de sesión exitoso",
         description: "Bienvenido a SAP Intelligent Agent.",
       });
-      router.push("/dashboard");
+
+      // Redirect admin to admin page, others to dashboard
+      if (values.email === ADMIN_EMAIL) {
+        router.push("/dashboard/admin");
+      } else {
+        router.push("/dashboard");
+      }
+
     } catch (error: any) {
       console.error("Login Error:", error);
       let description = "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.";

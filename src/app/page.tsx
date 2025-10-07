@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
+const ADMIN_EMAIL = "sanmartinfrancisco8@gmail.com";
+
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -12,7 +14,12 @@ export default function Home() {
   useEffect(() => {
     if (!isUserLoading) {
       if (user) {
-        router.replace("/dashboard");
+        // If user is admin, redirect to admin page, otherwise to dashboard
+        if (user.email === ADMIN_EMAIL) {
+          router.replace("/dashboard/admin");
+        } else {
+          router.replace("/dashboard");
+        }
       } else {
         router.replace("/login");
       }
