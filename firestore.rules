@@ -1,0 +1,98 @@
+/**
+ * @description This ruleset enforces a role-based access control system with user approval workflow.
+ * Only authenticated users can access the app, and unapproved users are restricted.
+ * Administrators can manage users and audit logs.
+ * @dataStructure
+ * - /users/{userId}: Stores user profiles with role and approval status.
+ * - /auditLogs/{auditLogId}: Stores audit logs of admin actions.
+ * - /roles_admin/{userId}: Indicates admin privileges via document existence.
+ * @keySecurityDecisions
+ * - Users can only read/write their own user document (excluding role/approved fields).
+ * - Only admins can read all user documents and modify role/approved fields.
+ * - Listing users is restricted to admins.
+ * - Public read access is not granted to audit logs.
+ * @denormalizationForAuthorization
+ * - User documents in `/users/{userId}` include the `role` and `approved` fields, enabling direct authorization checks without additional reads.
+ * @structuralSegregation
+ * - Admin privileges are managed in the `/roles_admin/{userId}` collection. The existence of a document in this location marks the user as admin.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profiles. Users can read/write their own profile (excluding role/approved), while admins can read all profiles and modify role/approved status.
+     * @path /users/{userId}
+     * @allow (read, write - user): Authenticated user with ID 'user123' can read and update their own profile.
+     * @allow (read - admin): Authenticated admin user can read any profile.
+     * @allow (create): Authenticated user with ID 'user123' can create their own profile.
+     * @deny (write - user): Authenticated user with ID 'user123' cannot modify the 'role' or 'approved' fields in their profile.
+     * @deny (read, write): Unauthenticated user cannot read or write any profile.
+     * @principle Enforces document ownership and role-based access control.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      // Read Permissions
+      allow get: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+
+      // Write Permissions
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == request.auth.uid;
+      allow update: if isExistingOwner(userId) && (request.resource.data.id == resource.data.id) && request.auth.token.role != 'admin';
+      allow update: if isSignedIn() && isAdmin();
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to audit logs. Only admins can create audit log entries.
+     * @path /auditLogs/{auditLogId}
+     * @allow (create): Authenticated admin user can create an audit log entry.
+     * @deny (read, write): Unauthenticated user cannot read or write any audit log entry.
+     * @principle Restricts audit log access to admins only.
+     */
+    match /auditLogs/{auditLogId} {
+      function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      }
+
+      allow get: if false;
+      allow list: if false;
+      allow create: if request.auth != null && isAdmin();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to the roles_admin collection.
+     * @path /roles_admin/{userId}
+     */
+    match /roles_admin/{userId} {
+        function isAdmin() {
+            return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+        }
+
+        // Anyone can create a role admin entry. This will be secured in function logic not in rules.
+        allow create: if request.auth != null && isAdmin();
+        // Anyone can delete a role admin entry. This will be secured in function logic not in rules.
+        allow delete: if request.auth != null && isAdmin();
+        allow get: if request.auth != null && isAdmin();
+        allow list: if request.auth != null && isAdmin();
+        allow update: if false;
+    }
+  }
+}

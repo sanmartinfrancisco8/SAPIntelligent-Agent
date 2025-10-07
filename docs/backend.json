@@ -1,0 +1,148 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system, including their authentication and authorization information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User's display name."
+        },
+        "role": {
+          "type": "string",
+          "description": "User's role in the system (admin, user, pending).",
+          "format": "string"
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Indicates whether the user has been approved by an administrator."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "displayName",
+        "role",
+        "approved",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AuditLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AuditLog",
+      "type": "object",
+      "description": "Represents an audit log entry for administrative actions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the audit log entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who performed the action. (Relationship: User 1:N AuditLog)"
+        },
+        "action": {
+          "type": "string",
+          "description": "Description of the action performed (e.g., approveUser, setRole)."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the action was performed.",
+          "format": "date-time"
+        },
+        "details": {
+          "type": "string",
+          "description": "Additional details about the action, such as the user ID affected."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "action",
+        "timestamp",
+        "details"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles, including email, display name, role, approval status, and timestamps. Includes denormalized 'role' and 'approved' status for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/auditLogs/{auditLogId}",
+        "definition": {
+          "entityName": "AuditLog",
+          "schema": {
+            "$ref": "#/backend/entities/AuditLog"
+          },
+          "description": "Stores audit log entries for administrative actions, including the user ID, action performed, timestamp, and details.",
+          "params": [
+            {
+              "name": "auditLogId",
+              "description": "The unique identifier of the audit log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "RoleAdmin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Indicates that a user has admin privileges. Existence of a document at this path grants admin role.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user with admin privileges."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This design prioritizes security and simplicity for managing user authentication, roles, and approval status in the SAP B1 Companion app. It leverages denormalization to ensure authorization independence and facilitates secure list operations. The key collections are `/users` for user profiles, `/auditLogs` for tracking admin actions, and `/roles_admin` for managing admin privileges.\n\n*   **Authorization Independence:** The `users` collection directly stores the `role` and `approved` status of each user within their document. This eliminates the need for `get()` calls in security rules to check roles or approval status, enabling atomic operations and improving security.\n*   **QAPs (Rules are not Filters):** The segregation of admin roles into the `/roles_admin` collection, coupled with the explicit `approved` and `role` fields in the `users` collection, enables secure `list` operations for user management. Admins can securely list users based on their approval status and role without exposing sensitive data to unauthorized users.\n\nThe chosen structure aligns with the core design principles by enforcing Authorization Independence, ensuring clarity of intent through explicit field naming, adhering to DBAC by using Firestore for role storage, and enabling secure QAPs through structural segregation."
+  }
+}
