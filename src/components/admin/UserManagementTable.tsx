@@ -34,6 +34,7 @@ type UserProfile = {
   role: 'admin' | 'user' | 'pending';
   approved: boolean;
   createdAt: { seconds: number, nanoseconds: number };
+  updatedAt?: { seconds: number, nanoseconds: number };
 };
 
 export function UserManagementTable() {
@@ -48,7 +49,7 @@ export function UserManagementTable() {
   const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
   const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
 
-  const handleUpdateUser = async (uid: string, updates: Partial<UserProfile>) => {
+  const handleUpdateUser = async (uid: string, updates: Partial<Pick<UserProfile, 'role' | 'approved'>>) => {
     if (!firestore || !adminUser) return;
 
     if (uid === adminUser.uid && (updates.role !== 'admin' || (updates.approved !== undefined && !updates.approved))) {
@@ -66,12 +67,11 @@ export function UserManagementTable() {
           updatedAt: serverTimestamp()
         };
 
-        // If making a user admin, ensure they are also approved.
         if (updates.role === 'admin') {
             finalUpdates.approved = true;
         }
 
-        batch.update(userDocRef, finalUpdates);
+        batch.update(userDocRef, finalUpdates as any);
 
         await batch.commit();
 
@@ -103,7 +103,7 @@ export function UserManagementTable() {
   };
 
   const renderTableContent = () => {
-    if (isLoading) {
+    if (isLoading || !adminUser) {
       return (
         <TableRow>
           <TableCell colSpan={6} className="h-64 text-center">
@@ -123,10 +123,9 @@ export function UserManagementTable() {
       );
     }
   
-    // Filter out the current admin from the list to prevent self-modification issues from the UI
-    const usersToList = users.filter(user => user.uid !== adminUser?.uid);
+    const usersToList = users.filter(user => user.uid !== adminUser.uid);
 
-    if (usersToList.length === 0 && users.length > 0) {
+    if (usersToList.length === 0) {
         return (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
@@ -209,3 +208,5 @@ export function UserManagementTable() {
     </div>
   );
 }
+
+    
