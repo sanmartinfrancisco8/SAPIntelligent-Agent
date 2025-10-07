@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useCollection } from "@/firebase/firestore/use-collection";
-import { collection, doc, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, writeBatch } from "firebase/firestore";
 import { useFirestore, useUser } from "@/firebase";
 import {
   Table,
@@ -41,13 +41,14 @@ export function UserManagementTable() {
   const { toast } = useToast();
 
   const usersQuery = useMemoFirebase(() => 
-    collection(firestore, "users")
+    firestore ? collection(firestore, "users") : null
   , [firestore]);
   
   const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
   const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
 
   const handleUpdateUser = async (uid: string, updates: Partial<UserProfile>) => {
+    if (!firestore) return;
     if (uid === adminUser?.uid && (updates.role !== 'admin' || updates.approved === false)) {
         toast({ variant: 'destructive', title: 'Acción no permitida', description: 'No puedes revocar tus propios privilegios de administrador.' });
         return;
@@ -76,8 +77,9 @@ export function UserManagementTable() {
     }
   };
 
-  const renderBadge = (value: string) => {
-    switch (value) {
+  const renderBadge = (value: string | boolean) => {
+    const stringValue = String(value);
+    switch (stringValue) {
       case 'admin':
         return <Badge variant="default" className="bg-primary/80 text-primary-foreground">Admin</Badge>;
       case 'user':
@@ -89,7 +91,7 @@ export function UserManagementTable() {
       case 'false':
         return <Badge variant="destructive">No Aprobado</Badge>;
       default:
-        return <Badge>{value}</Badge>;
+        return <Badge>{stringValue}</Badge>;
     }
   };
 
@@ -117,7 +119,7 @@ export function UserManagementTable() {
                 <TableCell className="font-medium">{user.displayName}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{renderBadge(user.role)}</TableCell>
-                <TableCell>{renderBadge(String(user.approved))}</TableCell>
+                <TableCell>{renderBadge(user.approved)}</TableCell>
                 <TableCell>
                   {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'dd/MM/yyyy HH:mm') : 'N/A'}
                 </TableCell>
@@ -148,7 +150,7 @@ export function UserManagementTable() {
                             Hacer Admin
                           </DropdownMenuItem>
                         )}
-                        {user.role === 'admin' && (
+                        {user.role === 'admin' && user.uid !== adminUser?.uid && (
                            <DropdownMenuItem
                              onClick={() => handleUpdateUser(user.uid, { role: 'user' })}
                              className="cursor-pointer text-destructive focus:text-destructive"
