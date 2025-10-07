@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth, useUser } from "@/firebase";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,26 +13,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { signOut } from 'firebase/auth';
 
 export function Header() {
   const router = useRouter();
-  const [user, setUser] = useState('');
+  const auth = useAuth();
+  const { user } = useUser();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('sap-b1-companion-user');
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("sap-b1-companion-auth");
-    localStorage.removeItem("sap-b1-companion-user");
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push("/login");
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1) {
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+    }
     return name.charAt(0).toUpperCase();
   };
 
@@ -48,8 +47,8 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={`https://avatar.vercel.sh/${user}.png`} alt={user} />
-                <AvatarFallback>{getInitials(user)}</AvatarFallback>
+                {user?.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
+                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
@@ -57,10 +56,10 @@ export function Header() {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">
-                  {user}
+                  {user?.displayName || 'Usuario'}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  Usuario de SAP
+                  {user?.email || 'No email'}
                 </p>
               </div>
             </DropdownMenuLabel>

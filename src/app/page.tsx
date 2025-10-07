@@ -1,5 +1,27 @@
-import { redirect } from 'next/navigation';
+"use client";
+
+import { useUser } from "@/firebase";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { LoadingSpinner } from "@/components/loading-spinner";
 
 export default function Home() {
-  redirect('/login');
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading) {
+      if (user) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/login");
+      }
+    }
+  }, [user, isUserLoading, router]);
+
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <LoadingSpinner size={48} />
+    </div>
+  );
 }

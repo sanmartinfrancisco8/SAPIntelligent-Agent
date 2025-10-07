@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useUser } from "@/firebase";
 import {
   SidebarProvider,
   Sidebar,
@@ -17,25 +18,20 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isClient, setIsClient] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, isUserLoading } = useUser();
 
   useEffect(() => {
-    setIsClient(true);
-    const auth = !!localStorage.getItem("sap-b1-companion-auth");
-    if (auth) {
-      setIsAuthenticated(true);
-    } else {
+    if (!isUserLoading && !user) {
       router.replace("/login");
     }
-  }, [router]);
+  }, [user, isUserLoading, router]);
 
   // Exclude the main dashboard layout from the fullscreen knowledge toolkit pages
   if (pathname.startsWith('/dashboard/knowledge-toolkit')) {
     return <>{children}</>;
   }
   
-  if (!isClient || !isAuthenticated) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <LoadingSpinner size={48} />
