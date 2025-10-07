@@ -95,9 +95,79 @@ export function UserManagementTable() {
     }
   };
 
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-64"><LoadingSpinner size={32} /></div>;
-  }
+  const renderTableContent = () => {
+    if (isLoading) {
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="h-64 text-center">
+            <LoadingSpinner size={32} />
+          </TableCell>
+        </TableRow>
+      );
+    }
+  
+    if (!users || users.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={6} className="h-24 text-center">
+            No hay usuarios ni autorizaciones pendientes para mostrar.
+          </TableCell>
+        </TableRow>
+      );
+    }
+  
+    return users.map((user) => (
+      <TableRow key={user.uid}>
+        <TableCell className="font-medium">{user.displayName}</TableCell>
+        <TableCell>{user.email}</TableCell>
+        <TableCell>{renderBadge(user.role)}</TableCell>
+        <TableCell>{renderBadge(user.approved)}</TableCell>
+        <TableCell>
+          {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'dd/MM/yyyy HH:mm') : 'N/A'}
+        </TableCell>
+        <TableCell className="text-right">
+          {isUpdating[user.uid] ? <LoadingSpinner size={16} /> : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Acciones</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {!user.approved && user.role === 'pending' && (
+                  <DropdownMenuItem
+                    onClick={() => handleUpdateUser(user.uid, { approved: true, role: 'user' })}
+                    className="cursor-pointer"
+                  >
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Aprobar Usuario
+                  </DropdownMenuItem>
+                )}
+                {user.role !== 'admin' && (
+                  <DropdownMenuItem
+                    onClick={() => handleUpdateUser(user.uid, { role: 'admin' })}
+                    className="cursor-pointer"
+                  >
+                    Hacer Admin
+                  </DropdownMenuItem>
+                )}
+                {user.role === 'admin' && user.uid !== adminUser?.uid && (
+                   <DropdownMenuItem
+                     onClick={() => handleUpdateUser(user.uid, { role: 'user' })}
+                     className="cursor-pointer text-destructive focus:text-destructive"
+                   >
+                    <UserX className="mr-2 h-4 w-4" />
+                     Revocar Admin
+                   </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </TableCell>
+      </TableRow>
+    ));
+  };
 
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -113,65 +183,7 @@ export function UserManagementTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users && users.length > 0 ? (
-            users.map((user) => (
-              <TableRow key={user.uid}>
-                <TableCell className="font-medium">{user.displayName}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{renderBadge(user.role)}</TableCell>
-                <TableCell>{renderBadge(user.approved)}</TableCell>
-                <TableCell>
-                  {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'dd/MM/yyyy HH:mm') : 'N/A'}
-                </TableCell>
-                <TableCell className="text-right">
-                  {isUpdating[user.uid] ? <LoadingSpinner size={16} /> : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Acciones</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {!user.approved && user.role === 'pending' && (
-                          <DropdownMenuItem
-                            onClick={() => handleUpdateUser(user.uid, { approved: true, role: 'user' })}
-                            className="cursor-pointer"
-                          >
-                            <UserCheck className="mr-2 h-4 w-4" />
-                            Aprobar Usuario
-                          </DropdownMenuItem>
-                        )}
-                        {user.role !== 'admin' && (
-                          <DropdownMenuItem
-                            onClick={() => handleUpdateUser(user.uid, { role: 'admin' })}
-                            className="cursor-pointer"
-                          >
-                            Hacer Admin
-                          </DropdownMenuItem>
-                        )}
-                        {user.role === 'admin' && user.uid !== adminUser?.uid && (
-                           <DropdownMenuItem
-                             onClick={() => handleUpdateUser(user.uid, { role: 'user' })}
-                             className="cursor-pointer text-destructive focus:text-destructive"
-                           >
-                            <UserX className="mr-2 h-4 w-4" />
-                             Revocar Admin
-                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center h-24">
-                No hay usuarios para mostrar.
-              </TableCell>
-            </TableRow>
-          )}
+          {renderTableContent()}
         </TableBody>
       </Table>
     </div>
