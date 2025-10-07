@@ -29,6 +29,8 @@ const formSchema = z.object({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres."),
 });
 
+const ADMIN_EMAIL = "sanmartinfrancisco8@gmail.com";
+
 export function RegisterForm() {
   const router = useRouter();
   const auth = useAuth();
@@ -57,25 +59,39 @@ export function RegisterForm() {
         displayName: values.displayName,
       });
 
-      // 3. Create user document in Firestore
+      // 3. Determine role and approval status
+      const isAdmin = values.email === ADMIN_EMAIL;
+      const userRole = isAdmin ? "admin" : "pending";
+      const isApproved = isAdmin;
+
+      // 4. Create user document in Firestore
       const userDocRef = doc(firestore, "users", user.uid);
       await setDoc(userDocRef, {
+        uid: user.uid,
         displayName: values.displayName,
         email: values.email,
-        role: "pending",
-        approved: false,
+        role: userRole,
+        approved: isApproved,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-
-      toast({
-        title: "Registro exitoso",
-        description: "Tu cuenta ha sido creada y está pendiente de aprobación por un administrador.",
-      });
-
-      // 4. Sign out the user and redirect to login
-      await auth.signOut();
-      router.push("/login");
+      
+      if (isAdmin) {
+        toast({
+            title: "Cuenta de administrador creada",
+            description: "Has sido registrado como administrador.",
+        });
+        // Log in the admin directly
+        router.push("/dashboard");
+      } else {
+        toast({
+            title: "Registro exitoso",
+            description: "Tu cuenta ha sido creada y está pendiente de aprobación por un administrador.",
+        });
+         // 5. Sign out the regular user and redirect to login
+        await auth.signOut();
+        router.push("/login");
+      }
 
     } catch (error: any) {
       console.error("Registration Error:", error);
