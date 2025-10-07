@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState } from "react";
 import { useCollection } from "@/firebase/firestore/use-collection";
-import { collection, doc, writeBatch } from "firebase/firestore";
+import { collection, doc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { useFirestore, useUser } from "@/firebase";
 import {
   Table,
@@ -48,8 +49,9 @@ export function UserManagementTable() {
   const [isUpdating, setIsUpdating] = useState<Record<string, boolean>>({});
 
   const handleUpdateUser = async (uid: string, updates: Partial<UserProfile>) => {
-    if (!firestore) return;
-    if (uid === adminUser?.uid && (updates.role !== 'admin' || updates.approved === false)) {
+    if (!firestore || !adminUser) return;
+
+    if (uid === adminUser.uid && (updates.role !== 'admin' || (updates.approved !== undefined && !updates.approved))) {
         toast({ variant: 'destructive', title: 'Acción no permitida', description: 'No puedes revocar tus propios privilegios de administrador.' });
         return;
     }
@@ -59,12 +61,17 @@ export function UserManagementTable() {
         const userDocRef = doc(firestore, "users", uid);
         const batch = writeBatch(firestore);
 
-        batch.update(userDocRef, { ...updates, updatedAt: new Date() });
+        const finalUpdates: Partial<UserProfile> & { updatedAt: any } = {
+          ...updates,
+          updatedAt: serverTimestamp()
+        };
 
-        // If making admin, ensure approved is true
+        // If making a user admin, ensure they are also approved.
         if (updates.role === 'admin') {
-            batch.update(userDocRef, { approved: true });
+            finalUpdates.approved = true;
         }
+
+        batch.update(userDocRef, finalUpdates);
 
         await batch.commit();
 
@@ -116,7 +123,20 @@ export function UserManagementTable() {
       );
     }
   
-    return users.map((user) => (
+    // Filter out the current admin from the list to prevent self-modification issues from the UI
+    const usersToList = users.filter(user => user.uid !== adminUser?.uid);
+
+    if (usersToList.length === 0 && users.length > 0) {
+        return (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center">
+                Solo tú estás registrado en el sistema.
+              </TableCell>
+            </TableRow>
+          );
+    }
+
+    return usersToList.map((user) => (
       <TableRow key={user.uid}>
         <TableCell className="font-medium">{user.displayName}</TableCell>
         <TableCell>{user.email}</TableCell>
