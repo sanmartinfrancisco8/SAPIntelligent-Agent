@@ -2,32 +2,45 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { useDoc } from '@/firebase/firestore/use-doc';
-
-type UserProfile = {
-  role?: 'admin' | 'user' | 'pending';
-};
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export function useAdminRole() {
   const { user, isUserLoading } = useUser();
-  
-  const userDocRef = useMemoFirebase(() => {
-    if (!user) return null;
-    const firestore = useFirestore();
-    return doc(firestore, 'users', user.uid);
-  }, [user]);
-
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
-
+  const firestore = useFirestore();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingRole, setIsCheckingRole] = useState(true);
 
   useEffect(() => {
-    if (!isUserLoading && !isProfileLoading) {
-        setIsAdmin(!!user && userProfile?.role === 'admin');
-    }
-  }, [user, isUserLoading, userProfile, isProfileLoading]);
+    const checkAdminRole = async () => {
+      if (isUserLoading) {
+        return;
+      }
 
-  return { isAdmin, isLoading: isUserLoading || isProfileLoading };
+      if (!user) {
+        setIsAdmin(false);
+        setIsCheckingRole(false);
+        return;
+      }
+
+      try {
+        const userDocRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin role:", error);
+        setIsAdmin(false);
+      } finally {
+        setIsCheckingRole(false);
+      }
+    };
+
+    checkAdminRole();
+  }, [user, isUserLoading, firestore]);
+
+  return { isAdmin, isLoading: isUserLoading || isCheckingRole };
 }
