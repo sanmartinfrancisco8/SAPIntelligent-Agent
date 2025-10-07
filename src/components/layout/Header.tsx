@@ -13,13 +13,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { LogOut } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import { signOut } from 'firebase/auth';
+import { useAdminRole } from '@/hooks/use-admin-role';
+import { Badge } from '../ui/badge';
+import Link from 'next/link';
 
 export function Header() {
   const router = useRouter();
   const auth = useAuth();
   const { user } = useUser();
+  const { isAdmin } = useAdminRole();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -55,15 +59,26 @@ export function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  {user?.displayName || 'Usuario'}
-                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium leading-none">
+                    {user?.displayName || 'Usuario'}
+                    </p>
+                    {isAdmin && <Badge variant="secondary" className='text-xs'>Admin</Badge>}
+                </div>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user?.email || 'No email'}
                 </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {isAdmin && (
+                <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard/admin">
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        <span>Panel de Admin</span>
+                    </Link>
+                </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Cerrar sesión</span>

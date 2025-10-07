@@ -14,40 +14,19 @@ import {
   SidebarTrigger,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { useState } from 'react';
+import { useAdminRole } from '@/hooks/use-admin-role';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { user } = useUser();
-  const firestore = useFirestore();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAdminRole();
 
   const [openModules, setOpenModules] = useState<string[]>(modules.filter(m => pathname.startsWith(`/dashboard/module/${m.id}`)).map(m => m.id));
-
-  useEffect(() => {
-    if (user && firestore) {
-      const checkAdminRole = async () => {
-        const userDocRef = doc(firestore, "users", user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists() && userDoc.data().role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      };
-      checkAdminRole();
-    } else {
-      setIsAdmin(false);
-    }
-  }, [user, firestore]);
 
   const toggleModule = (moduleId: string) => {
     setOpenModules(prev => 
