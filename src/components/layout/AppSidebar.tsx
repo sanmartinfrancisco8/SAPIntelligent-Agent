@@ -18,13 +18,36 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [openModules, setOpenModules] = useState<string[]>(modules.filter(m => pathname.startsWith(`/dashboard/module/${m.id}`)).map(m => m.id));
+
+  useEffect(() => {
+    if (user && firestore) {
+      const checkAdminRole = async () => {
+        const userDocRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      };
+      checkAdminRole();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user, firestore]);
 
   const toggleModule = (moduleId: string) => {
     setOpenModules(prev => 
@@ -37,17 +60,30 @@ export function AppSidebar() {
   return (
     <>
       <SidebarHeader className="p-4 no-print">
-        <div className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3">
           <AppLogo />
           <div className="flex flex-col">
             <h2 className="font-headline text-lg font-semibold text-sidebar-foreground">SAP Intelligent Agent</h2>
             <p className="text-xs text-sidebar-foreground/80">v1.0</p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <Separator className="no-print bg-sidebar-border"/>
       <SidebarContent className="p-2 no-print">
         <SidebarMenu>
+          {isAdmin && (
+            <SidebarMenuItem>
+              <Link href="/dashboard/admin" passHref>
+                <SidebarMenuButton asChild isActive={pathname === '/dashboard/admin'}>
+                  <a>
+                    <ShieldCheck />
+                    <span>Gestión de Usuarios</span>
+                  </a>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          )}
+
           {modules.map((module) => (
             <Collapsible key={module.id} asChild open={openModules.includes(module.id)} onOpenChange={() => toggleModule(module.id)}>
               <SidebarMenuItem>
