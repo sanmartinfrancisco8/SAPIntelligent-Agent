@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { modules } from "@/lib/sap-modules";
+import { getModuleIconComponent, modules } from "@/lib/sap-modules";
 import { AppLogo } from "@/components/icons";
 import {
   SidebarHeader,
@@ -64,38 +64,52 @@ export function AppSidebar() {
             </SidebarMenuItem>
           )}
 
-          {modules.map((module) => (
-            <Collapsible key={module.id} asChild open={openModules.includes(module.id)} onOpenChange={() => toggleModule(module.id)}>
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
+          {modules.map((module) => {
+            const Icon = getModuleIconComponent(module.icon);
+
+            return (
+              <Collapsible
+                key={module.id}
+                asChild
+                open={openModules.includes(module.id)}
+                onOpenChange={() => toggleModule(module.id)}
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       isActive={pathname.startsWith(`/dashboard/module/${module.id}`)}
                       tooltip={{ children: module.name }}
                       className="justify-between"
                     >
-                        <div className='flex items-center gap-2'>
-                            <module.icon />
-                            <span>{module.name}</span>
-                        </div>
-                        <ChevronRight className={cn("h-4 w-4 transition-transform", openModules.includes(module.id) && "rotate-90")} />
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" />
+                        <span>{module.name}</span>
+                      </div>
+                      <ChevronRight
+                        className={cn(
+                          "h-4 w-4 transition-transform",
+                          openModules.includes(module.id) && "rotate-90",
+                        )}
+                      />
                     </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent asChild>
-                  <SidebarMenuSub>
-                    {module.functionalities.map(func => (
+                  </CollapsibleTrigger>
+                  <CollapsibleContent asChild>
+                    <SidebarMenuSub>
+                      {module.functionalities.map((func) => (
                         <SidebarMenuSubItem key={func.id}>
-                            <Link href={`/dashboard/module/${module.id}#${func.id}`} passHref>
-                                <SidebarMenuSubButton asChild isActive={false}>
-                                    <a>{func.name}</a>
-                                </SidebarMenuSubButton>
-                            </Link>
+                          <Link href={`/dashboard/module/${module.id}#${func.id}`} passHref>
+                            <SidebarMenuSubButton asChild isActive={false}>
+                              <a>{func.name}</a>
+                            </SidebarMenuSubButton>
+                          </Link>
                         </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-          ))}
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="hidden md:flex p-4 no-print">

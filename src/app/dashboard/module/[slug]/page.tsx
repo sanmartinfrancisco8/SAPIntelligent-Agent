@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import { ModuleView } from '@/components/module/ModuleView';
 
 type ModulePageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 export async function generateStaticParams() {
@@ -15,8 +15,9 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function ModulePage({ params }: ModulePageProps) {
-  const module = getModuleById(params.slug);
+export default async function ModulePage({ params }: ModulePageProps) {
+  const { slug } = await params;
+  const module = getModuleById(slug);
 
   if (!module) {
     notFound();
