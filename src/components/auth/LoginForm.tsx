@@ -98,8 +98,8 @@ export function LoginForm() {
 
       const userDocRef = doc(firestore, "users", userCredential.user.uid);
       const userDoc = await getDoc(userDocRef);
-      const email =
-        userCredential.user.email?.toLowerCase() ?? normalizedEmail;
+      const canonicalEmail = userCredential.user.email?.trim() ?? trimmedEmail;
+      const email = canonicalEmail.toLowerCase();
       const isAdminEmail = ADMIN_EMAILS.has(email);
 
       let userData = userDoc.data() as UserProfile | undefined;
@@ -109,9 +109,9 @@ export function LoginForm() {
           uid: userCredential.user.uid,
           displayName:
             userCredential.user.displayName ||
-            userCredential.user.email?.split("@")[0] ||
-            values.email,
-          email: userCredential.user.email ?? values.email,
+            canonicalEmail.split("@")[0] ||
+            trimmedEmail,
+          email: canonicalEmail,
           role: isAdminEmail ? "admin" : "pending",
           approved: isAdminEmail,
           createdAt: serverTimestamp(),

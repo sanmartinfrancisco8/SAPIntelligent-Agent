@@ -47,6 +47,15 @@ export function PendingRequestsList() {
 
   const { data: pendingUsers, isLoading } = useCollection<PendingUserData>(pendingUsersQuery);
 
+  const safePendingUsers: PendingUser[] = (pendingUsers ?? []) as PendingUser[];
+  const sortedPendingUsers = safePendingUsers
+    .slice()
+    .sort((a, b) => {
+      const aTime = a.createdAt?.toMillis() ?? 0;
+      const bTime = b.createdAt?.toMillis() ?? 0;
+      return bTime - aTime;
+    });
+
   const handleApproveUser = async (user: PendingUser) => {
     if (!firestore || !adminUser) return;
 
@@ -84,43 +93,36 @@ export function PendingRequestsList() {
           <div className="flex items-center justify-center py-6">
             <LoadingSpinner size={24} />
           </div>
-        ) : !pendingUsers || pendingUsers.length === 0 ? (
+        ) : sortedPendingUsers.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             En este momento no hay cuentas pendientes de aprobación.
           </p>
         ) : (
           <ul className="space-y-3">
-            {((pendingUsers ?? []) as PendingUser[])
-              .slice()
-              .sort((a, b) => {
-                const aTime = a.createdAt?.toMillis() ?? 0;
-                const bTime = b.createdAt?.toMillis() ?? 0;
-                return bTime - aTime;
-              })
-              .map((user) => (
-                <li
-                  key={user.id}
-                  className="flex flex-col gap-2 rounded-md border border-border/60 bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {user.displayName ?? user.email ?? "Usuario"}
-                    </p>
-                    <div className="text-sm text-muted-foreground">
-                      {user.email ?? "Sin correo registrado"}
-                      <span className="mx-2 inline-block h-1 w-1 rounded-full bg-muted-foreground align-middle" />
-                      {formatCreatedAt(user.createdAt)}
-                    </div>
+            {sortedPendingUsers.map((user) => (
+              <li
+                key={user.id}
+                className="flex flex-col gap-2 rounded-md border border-border/60 bg-background/60 p-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-medium text-foreground">
+                    {user.displayName ?? user.email ?? "Usuario"}
+                  </p>
+                  <div className="text-sm text-muted-foreground">
+                    {user.email ?? "Sin correo registrado"}
+                    <span className="mx-2 inline-block h-1 w-1 rounded-full bg-muted-foreground align-middle" />
+                    {formatCreatedAt(user.createdAt)}
                   </div>
-                  <Button
-                    size="sm"
-                    disabled={updatingUserId === user.id}
-                    onClick={() => handleApproveUser(user)}
-                  >
-                    {updatingUserId === user.id ? <LoadingSpinner size={16} /> : "Aprobar"}
-                  </Button>
-                </li>
-              ))}
+                </div>
+                <Button
+                  size="sm"
+                  disabled={updatingUserId === user.id}
+                  onClick={() => handleApproveUser(user)}
+                >
+                  {updatingUserId === user.id ? <LoadingSpinner size={16} /> : "Aprobar"}
+                </Button>
+              </li>
+            ))}
           </ul>
         )}
       </CardContent>
