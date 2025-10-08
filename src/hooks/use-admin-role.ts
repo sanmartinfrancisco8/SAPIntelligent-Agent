@@ -13,19 +13,25 @@ export function useAdminRole() {
 
   useEffect(() => {
     const checkAdminRole = async () => {
+      // If the user object is loading, we can't check the role yet.
       if (isUserLoading) {
+        setIsCheckingRole(true);
         return;
       }
-
+      
+      // If there's no user, they're definitely not an admin.
       if (!user) {
         setIsAdmin(false);
         setIsCheckingRole(false);
         return;
       }
 
+      // If we have a user, check their role in Firestore.
+      setIsCheckingRole(true);
       try {
         const userDocRef = doc(firestore, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
+        
         if (userDoc.exists() && userDoc.data().role === 'admin') {
           setIsAdmin(true);
         } else {
