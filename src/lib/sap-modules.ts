@@ -1,4 +1,3 @@
-import type { LucideIcon } from 'lucide-react';
 import {
   Cog,
   Landmark,
@@ -15,8 +14,31 @@ import {
   UserCheck,
   Briefcase,
   AreaChart,
-  Network
+  Network,
 } from 'lucide-react';
+
+const moduleIconComponents = {
+  Cog,
+  Landmark,
+  HeartHandshake,
+  ShoppingCart,
+  Truck,
+  Users,
+  Banknote,
+  Boxes,
+  Factory,
+  Wrench,
+  BrainCircuit,
+  ClipboardList,
+  UserCheck,
+  Briefcase,
+  AreaChart,
+  Network,
+} as const;
+
+export type ModuleIconName = keyof typeof moduleIconComponents;
+
+export const getModuleIconComponent = (iconName: ModuleIconName) => moduleIconComponents[iconName];
 
 export type Functionality = {
   id: string;
@@ -27,7 +49,7 @@ export type Functionality = {
 export type Module = {
   id: string;
   name: string;
-  icon: LucideIcon;
+  icon: ModuleIconName;
   description: string;
   functionalities: Functionality[];
 };
@@ -36,7 +58,7 @@ export const modules: Module[] = [
   {
     id: 'administracion',
     name: 'Administración',
-    icon: Cog,
+    icon: 'Cog',
     description: 'Gestión de la configuración del sistema, autorizaciones y datos maestros.',
     functionalities: [
       { id: 'definiciones', name: 'Definiciones generales', description: 'Configuración de la información de la empresa, períodos contables e inicialización básica del sistema.' },
@@ -47,7 +69,7 @@ export const modules: Module[] = [
   {
     id: 'finanzas',
     name: 'Finanzas',
-    icon: Landmark,
+    icon: 'Landmark',
     description: 'Manejo de contabilidad, finanzas, control presupuestario e informes financieros.',
     functionalities: [
       { id: 'plan-cuentas', name: 'Plan de Cuentas', description: 'Estructura jerárquica de todas las cuentas de mayor utilizadas para la presentación de informes financieros.' },
@@ -58,7 +80,7 @@ export const modules: Module[] = [
   {
     id: 'crm',
     name: 'CRM',
-    icon: HeartHandshake,
+    icon: 'HeartHandshake',
     description: 'Gestión de relaciones con clientes, oportunidades de venta y actividades de servicio.',
     functionalities: [
         { id: 'oportunidades', name: 'Oportunidades de Venta', description: 'Seguimiento de posibles acuerdos de venta a través de múltiples etapas, desde el cliente potencial hasta el cierre.' },
@@ -69,7 +91,7 @@ export const modules: Module[] = [
   {
     id: 'ventas',
     name: 'Ventas (Clientes)',
-    icon: ShoppingCart,
+    icon: 'ShoppingCart',
     description: 'Proceso completo de ventas, desde la cotización hasta la facturación y el cobro.',
     functionalities: [
       { id: 'oferta', name: 'Oferta de Venta', description: 'Creación de cotizaciones para clientes con precios, cantidades y condiciones de venta.' },
@@ -80,7 +102,7 @@ export const modules: Module[] = [
   {
     id: 'compras',
     name: 'Compras (Proveedores)',
-    icon: Truck,
+    icon: 'Truck',
     description: 'Proceso de aprovisionamiento, desde la solicitud de compra hasta el pago a proveedores.',
     functionalities: [
       { id: 'solicitud', name: 'Solicitud de Compra', description: 'Documento interno para solicitar la compra de bienes o servicios.' },
@@ -91,7 +113,7 @@ export const modules: Module[] = [
   {
     id: 'socios-negocio',
     name: 'Socios de Negocios',
-    icon: Users,
+    icon: 'Users',
     description: 'Gestión centralizada de datos maestros de clientes, proveedores y prospectos.',
     functionalities: [
         { id: 'datos-maestros', name: 'Datos Maestros del Socio', description: 'Creación y mantenimiento de la información de contacto, direcciones y datos fiscales de los socios de negocio.' },
@@ -101,7 +123,7 @@ export const modules: Module[] = [
   {
     id: 'gestion-bancos',
     name: 'Gestión de Bancos',
-    icon: Banknote,
+    icon: 'Banknote',
     description: 'Manejo de pagos, cobros, depósitos y reconciliaciones bancarias.',
     functionalities: [
       { id: 'pagos-recibidos', name: 'Pagos Recibidos', description: 'Procesamiento de los pagos entrantes de los clientes en diversas formas (efectivo, cheque, transferencia).' },
@@ -112,7 +134,7 @@ export const modules: Module[] = [
   {
     id: 'inventario',
     name: 'Inventario',
-    icon: Boxes,
+    icon: 'Boxes',
     description: 'Control de stock, gestión de almacenes, transferencias y valoración de inventario.',
     functionalities: [
       { id: 'datos-maestros-articulos', name: 'Datos Maestros de Artículos', description: 'Mantenimiento de la información detallada de cada producto, incluyendo costes, precios y unidades de medida.' },
@@ -123,7 +145,7 @@ export const modules: Module[] = [
   {
     id: 'produccion',
     name: 'Producción',
-    icon: Factory,
+    icon: 'Factory',
     description: 'Gestión de órdenes de producción, listas de materiales y control de planta.',
     functionalities: [
       { id: 'lista-materiales', name: 'Lista de Materiales (BoM)', description: 'Define los componentes, cantidades y procesos necesarios para fabricar un producto terminado.' },
@@ -133,7 +155,7 @@ export const modules: Module[] = [
   {
     id: 'mrp',
     name: 'MRP',
-    icon: BrainCircuit,
+    icon: 'BrainCircuit',
     description: 'Planificación de requerimientos de material para optimizar el inventario y la producción.',
     functionalities: [
       { id: 'asistente-mrp', name: 'Asistente de MRP', description: 'Herramienta que calcula los requerimientos de material y genera recomendaciones de compra y producción.' },
@@ -143,7 +165,7 @@ export const modules: Module[] = [
   {
     id: 'servicio',
     name: 'Servicio',
-    icon: Wrench,
+    icon: 'Wrench',
     description: 'Gestión de contratos de servicio, llamadas de servicio y seguimiento postventa.',
     functionalities: [
       { id: 'contrato-servicio', name: 'Contrato de Servicio', description: 'Gestión de acuerdos de servicio con clientes, incluyendo cobertura y SLAs.' },
@@ -153,7 +175,7 @@ export const modules: Module[] = [
   {
     id: 'recursos-humanos',
     name: 'Recursos Humanos',
-    icon: UserCheck,
+    icon: 'UserCheck',
     description: 'Administración de datos de empleados y gestión de personal.',
     functionalities: [
         { id: 'datos-maestros-empleado', name: 'Datos Maestros del Empleado', description: 'Mantenimiento de la información personal, de contacto y contractual de los empleados.' },
