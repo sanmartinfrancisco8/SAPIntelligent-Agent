@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { useAuth, useFirestore } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,11 +28,10 @@ const formSchema = z.object({
   password: z.string().min(1, "La contraseña es obligatoria."),
 });
 
-const ADMIN_EMAIL = "sanmartinfrancisco8@gmail.com";
-
 export function LoginForm() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,14 +46,41 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password,
+      );
+
+      const userDoc = await getDoc(doc(firestore, "users", userCredential.user.uid));
+
+      if (!userDoc.exists()) {
+        await auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Cuenta no encontrada",
+          description: "No se pudo encontrar la información de tu cuenta. Por favor, contacta al administrador.",
+        });
+        return;
+      }
+
+      const userData = userDoc.data() as { approved?: boolean; role?: string };
+
+      if (!userData?.approved) {
+        toast({
+          title: "Cuenta pendiente de aprobación",
+          description: "Un administrador revisará tu solicitud. Te notificaremos cuando tu cuenta esté activa.",
+        });
+        router.push("/pending-approval");
+        return;
+      }
+
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido a SAP Intelligent Agent.",
       });
 
-      // Redirect admin to admin page, others to dashboard
-      if (values.email === ADMIN_EMAIL) {
+      if (userData.role === "admin") {
         router.push("/dashboard/admin");
       } else {
         router.push("/dashboard");
