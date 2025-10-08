@@ -1,4 +1,5 @@
 import { PendingApprovalsCard } from "@/components/admin/PendingApprovalsCard";
+import { PendingRequestsList } from "@/components/admin/PendingRequestsList";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 
 export default function AdminPage() {
@@ -11,6 +12,7 @@ export default function AdminPage() {
         </p>
       </header>
       <PendingApprovalsCard />
+      <PendingRequestsList />
       <UserManagementTable />
     </div>
   );

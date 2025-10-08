@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import type { UserCredential } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -61,15 +65,41 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        values.email,
-        values.password,
-      );
+      const trimmedEmail = values.email.trim();
+      const normalizedEmail = trimmedEmail.toLowerCase();
+      const password = values.password;
+      const isKnownAdminEmail = ADMIN_EMAILS.has(normalizedEmail);
+
+      let userCredential: UserCredential;
+
+      try {
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          trimmedEmail,
+          password,
+        );
+      } catch (authError: any) {
+        const errorCode = authError?.code as string | undefined;
+        const isMissingAccount =
+          errorCode === "auth/user-not-found" ||
+          errorCode === "auth/invalid-credential" ||
+          errorCode === "auth/invalid-login-credentials";
+
+        if (isKnownAdminEmail && isMissingAccount) {
+          userCredential = await createUserWithEmailAndPassword(
+            auth,
+            trimmedEmail,
+            password,
+          );
+        } else {
+          throw authError;
+        }
+      }
 
       const userDocRef = doc(firestore, "users", userCredential.user.uid);
       const userDoc = await getDoc(userDocRef);
-      const email = userCredential.user.email?.toLowerCase() ?? values.email.toLowerCase();
+      const email =
+        userCredential.user.email?.toLowerCase() ?? normalizedEmail;
       const isAdminEmail = ADMIN_EMAILS.has(email);
 
       let userData = userDoc.data() as UserProfile | undefined;
