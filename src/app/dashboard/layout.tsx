@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
+import { useDoc } from "@/firebase/firestore/use-doc";
 import {
   SidebarProvider,
   Sidebar,
@@ -10,6 +11,12 @@ import {
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { doc } from "firebase/firestore";
+
+type UserProfile = {
+  approved?: boolean;
+  role?: "admin" | "user" | "pending";
+};
 
 export default function DashboardLayout({
   children,
@@ -19,6 +26,14 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemo(
+    () => (user ? doc(firestore, "users", user.uid) : null),
+    [firestore, user],
+  );
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -26,17 +41,34 @@ export default function DashboardLayout({
     }
   }, [user, isUserLoading, router]);
 
+  useEffect(() => {
+    if (!isUserLoading && user && !isProfileLoading) {
+      if (!userProfile) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!userProfile.approved) {
+        router.replace("/pending-approval");
+      }
+    }
+  }, [isUserLoading, user, isProfileLoading, userProfile, router]);
+
   // Exclude the main dashboard layout from the fullscreen knowledge toolkit pages
   if (pathname.startsWith('/dashboard/knowledge-toolkit')) {
     return <>{children}</>;
   }
-  
-  if (isUserLoading || !user) {
+
+  if (isUserLoading || isProfileLoading || !user || !userProfile) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <LoadingSpinner size={48} />
       </div>
     );
+  }
+
+  if (!userProfile.approved) {
+    return null;
   }
 
   return (

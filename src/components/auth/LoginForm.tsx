@@ -6,7 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuth } from "@/firebase";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { useAuth, useFirestore } from "@/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,16 +29,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
+const ADMIN_EMAILS = new Set([
+  "sanmartinfrancisco8@gmail.com",
+]);
+
+type UserProfile = {
+  approved?: boolean;
+  role?: "admin" | "user" | "pending";
+};
+
 const formSchema = z.object({
   email: z.string().email("Por favor, introduce un email válido."),
   password: z.string().min(1, "La contraseña es obligatoria."),
 });
 
-const ADMIN_EMAIL = "sanmartinfrancisco8@gmail.com";
-
 export function LoginForm() {
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,14 +61,93 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password,
+      );
+
+      const userDocRef = doc(firestore, "users", userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const email = userCredential.user.email?.toLowerCase() ?? values.email.toLowerCase();
+      const isAdminEmail = ADMIN_EMAILS.has(email);
+
+      let userData = userDoc.data() as UserProfile | undefined;
+
+      if (!userDoc.exists()) {
+        const defaultProfile = {
+          uid: userCredential.user.uid,
+          displayName:
+            userCredential.user.displayName ||
+            userCredential.user.email?.split("@")[0] ||
+            values.email,
+          email: userCredential.user.email ?? values.email,
+          role: isAdminEmail ? "admin" : "pending",
+          approved: isAdminEmail,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+
+        await setDoc(userDocRef, defaultProfile);
+        userData = { approved: defaultProfile.approved, role: defaultProfile.role };
+      }
+
+      if (userData) {
+        const updates: Partial<UserProfile> = {};
+
+        if (isAdminEmail && userData.role !== "admin") {
+          updates.role = "admin";
+        }
+
+        if (isAdminEmail && userData.approved !== true) {
+          updates.approved = true;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          await updateDoc(userDocRef, {
+            ...updates,
+            updatedAt: serverTimestamp(),
+          });
+          userData = { ...userData, ...updates };
+        }
+      }
+
+      if (!userData) {
+        await auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Cuenta no encontrada",
+          description: "No se pudo encontrar la información de tu cuenta. Por favor, contacta al administrador.",
+        });
+        return;
+      }
+
+      const normalizedUserData = {
+        approved: userData.approved ?? false,
+        role:
+          userData.role ??
+          (userData.approved
+            ? "user"
+            : isAdminEmail
+              ? "admin"
+              : "pending"),
+      };
+
+      if (!normalizedUserData.approved) {
+        toast({
+          title: "Cuenta pendiente de aprobación",
+          description: "Un administrador revisará tu solicitud. Te notificaremos cuando tu cuenta esté activa.",
+        });
+        router.push("/pending-approval");
+        return;
+      }
+
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido a SAP Intelligent Agent.",
       });
 
-      // Redirect admin to admin page, others to dashboard
-      if (values.email === ADMIN_EMAIL) {
+      if (normalizedUserData.role === "admin") {
         router.push("/dashboard/admin");
       } else {
         router.push("/dashboard");

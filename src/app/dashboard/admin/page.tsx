@@ -1,3 +1,4 @@
+import { PendingApprovalsCard } from "@/components/admin/PendingApprovalsCard";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 
 export default function AdminPage() {
@@ -9,6 +10,7 @@ export default function AdminPage() {
           Aprueba, rechaza y gestiona los roles de los usuarios de la aplicación.
         </p>
       </header>
+      <PendingApprovalsCard />
       <UserManagementTable />
     </div>
   );
