@@ -65,6 +65,11 @@ const generateProcessFlowFlow = ai.defineFlow(
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
-    return {diagramDataUri: media!.url!};
+    if (!media?.url) {
+      throw new Error('Process flow diagram generation failed: missing media response URL.');
+    }
+
+    return {diagramDataUri: media.url};
   }
 );
+
