@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Module, Functionality } from '@/lib/sap-modules';
@@ -77,13 +78,10 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
           `;
           break;
         case 'process-flow':
-          if (!selectedFunctionality) {
-            setError('Por favor, seleccione una funcionalidad.');
-            setIsLoading(false);
-            return;
-          }
-          // Using a placeholder image service for the mock diagram
-          data = `https://picsum.photos/seed/${selectedFunctionality.id}/1200/800`;
+          // If a functionality is selected, its ID is used for the image seed.
+          // Otherwise, the module\'s ID is used for a general process flow diagram.
+          const seedId = selectedFunctionality ? selectedFunctionality.id : selectedModule.id;
+          data = `https://picsum.photos/seed/${seedId}/1200/800`;
           break;
         default:
           setError('Tipo de generación no reconocido.');
@@ -106,9 +104,12 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
 
   const handleDownload = () => {
     if (!result || !resultType || !selectedModule) return;
-    
-    const title = resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/[\\/:\s]/g, '_')}`
+
+    const title =
+      resultType === 'process-flow'
+        ? selectedFunctionality
+          ? `Flujo_de_Proceso_${selectedFunctionality.name.replace(/[\\/:\s]/g, '_')}`
+          : `Flujo_General_${selectedModule.name.replace(/[\\/:\s]/g, '_')}`
         : `Resultado_${selectedModule.name.replace(/[\\/:\s]/g, '_')}`;
 
     if (resultType === 'summary' || resultType === 'mind-map') {
@@ -133,18 +134,20 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
 
   const openInNewTab = () => {
     if (!result || !resultType || !selectedModule) return;
-  
+
     const title =
-      resultType === 'process-flow' && selectedFunctionality
-        ? `Flujo de Proceso – ${selectedFunctionality.name}`
+      resultType === 'process-flow'
+        ? selectedFunctionality
+          ? `Flujo de Proceso – ${selectedFunctionality.name}`
+          : `Flujo de Proceso General – ${selectedModule.name}`
         : `Resultado IA – ${selectedModule.name}`;
-  
+
     const payload: ViewerPayload = {
       type: resultType,
       data: result,
       title: title,
     };
-  
+
     try {
       const key = `viewerPayload_${Date.now()}`;
       localStorage.setItem(key, JSON.stringify(payload));
@@ -169,7 +172,7 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
     }
   };
 
-  const isGenerateDisabled = isLoading || !selectedModule || (activeTab === 'process-flow' && !selectedFunctionality);
+  const isGenerateDisabled = isLoading || !selectedModule;
 
   const ResultIcon = () => {
     if (!resultType) return null;
@@ -180,7 +183,7 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
       default: return null;
     }
   };
-  
+
   const canCopy = resultType === 'summary' || resultType === 'mind-map';
 
   const resultsPanel = (
@@ -307,7 +310,7 @@ ${selectedModule.functionalities.map(f => `    ├── ${f.name}`).join('\n')}
                   <TabsTrigger value="mind-map">Mapa Mental</TabsTrigger>
                   <TabsTrigger value="process-flow">Flujo de Proceso</TabsTrigger>
                 </TabsList>
-              
+
                 <div className="flex-1 mt-6">
                   {activeTab === 'process-flow' && (
                     <div className="mb-4">

@@ -1,5 +1,6 @@
 import { LoginForm } from "@/components/auth/LoginForm";
 import { AppLogo } from "@/components/icons";
+import { SetupAdmin } from "@/components/admin/SetupAdmin";
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -25,6 +26,7 @@ export default function LoginPage() {
               Regístrate aquí
             </Link>
           </p>
+        <SetupAdmin />
       </div>
     </main>
   );
