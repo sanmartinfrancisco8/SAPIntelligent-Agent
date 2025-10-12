@@ -50,6 +50,7 @@ INITIAL_ADMIN_NAME="Nombre del Admin"
 - `npm run dev`: Ejecuta el servidor de desarrollo en el puerto 9002.
 - `npm run build`: Genera el build de producción.
 - `npm run start`: Arranca el servidor de producción (`next start`) respetando la variable `PORT` que define Hostinger.
+- `npm run export`: Copia los artefactos estáticos disponibles a la carpeta `out`. Si alguna página no puede prerenderizarse, el script genera un `index.html` informativo para evitar errores 403 en proveedores de hosting estático.
 
 ## Despliegue en Hostinger
 
