@@ -61,6 +61,18 @@ INITIAL_ADMIN_NAME="Nombre del Admin"
    - Start: `npm run start`
 4. Guarda la configuración y ejecuta el despliegue. Hostinger instalará dependencias, construirá la aplicación y levantará el servidor Next.js.
 
+### Solución al error 404 en Hostinger
+
+Si, después de desplegar, Hostinger muestra una página 404 en tu dominio, revisa los siguientes puntos antes de volver a publicar:
+
+1. **Comprueba que la aplicación esté configurada como "Node.js"** en el panel de Hostinger. Si el proyecto se publica como un sitio estático se servirá únicamente el contenido de la carpeta `public` y cualquier ruta devolverá 404.
+2. **Verifica que el proceso `npm run start` esté en ejecución.** En el panel de despliegues, abre la pestaña *Logs* y busca la línea `ready - started server on 0.0.0.0:<puerto>`. Si no aparece, reinicia el deploy o pulsa *Restart*.
+3. **Confirma que el puerto asignado por Hostinger esté libre.** Cuando otra aplicación usa el mismo puerto, Hostinger levanta una página 404 genérica. Puedes forzar el cierre de procesos antiguos desde *Processes → Stop All* y volver a desplegar.
+4. **Asegúrate de que las variables de entorno de Firebase estén completas.** Sin ellas, Next.js responde con un 404 al intentar resolver rutas protegidas. Vuelve a guardar los valores en *Environment Variables* y reinicia el servidor.
+5. **Revisa los registros de `npm run build`.** Si la compilación falló, Hostinger deja un artefacto incompleto y sólo sirve 404. Corrige los errores indicados, vuelve a desplegar y espera a que aparezca el mensaje `Build succeeded` en los logs.
+
+Una vez que todas estas comprobaciones pasen, abre la URL principal (`/`). La aplicación renderizará el `LoadingSpinner` y luego redirigirá a `/login` o al `dashboard`, confirmando que el servidor Next.js quedó operativo.
+
 > Gracias a la nueva configuración, ya no es necesario depender de las credenciales automáticas de Firebase Hosting. El despliegue funciona en cualquier plataforma Node.js que permita definir variables de entorno.
 
 ## Desarrollo local
